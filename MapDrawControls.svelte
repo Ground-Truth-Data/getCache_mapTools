@@ -31,13 +31,13 @@ import {
     safeFlyTo,
 } from "$parent/siblings/getCache_OnlineMap/lib/safeMap";
 import { ensureUsername } from "$lib/mobile/utils/ensureUsername.svelte";
-import { loadUserProfile } from "../db/index";
+import { loadUserProfile } from "$mobRoutes/db/index";
 import MapDrawDemo from "./MapDrawDemo.svelte";
 import {
 	createMapDemoScheduler,
 	type MapDemoKey,
 } from "./mapDemoScheduler.svelte";
-import { RETREEVER_STAMP } from "../db/tinySchema";
+import { RETREEVER_STAMP } from "$mobRoutes/db/tinySchema";
 import SnakeRuler from "$parent/siblings/getCache_OfflineMap/lib/mapUi/SnakeRuler.svelte";
 import SelfCoordPill from "$parent/siblings/getCache_OfflineMap/lib/mapUi/SelfCoordPill.svelte";
 import { type ShareFormat } from "$lib/mobile/components/ui/SharePicker.svelte";
@@ -301,7 +301,7 @@ function handleSearchResult(result: {
 
 const cache = createCacheStore();
 const mapStore = createMapStore();
-const overlayMgr = createOverlayManager(() => map, mapStore);
+const overlayMgr = createOverlayManager(() => map, mapStore, mapPorts);
 
 let cachedDisplayName = $state<string | null>(null);
 
@@ -848,6 +848,7 @@ $effect(() => {
 const pins = createPinMarkers({
     getMap: () => map,
     mapStore,
+    ports: mapPorts,
     getOffline: () => offline,
     getSelectedKey: () =>
         (selectedFeature?.properties?.mapFeatureKey as string) ?? null,

@@ -30,7 +30,7 @@
         loadUserProfile,
         setInboundPackageReceivedAt,
         type InboundPackage as Package,
-    } from "../db/index";
+    } from "$mobRoutes/db/index";
 
     import { overlayOpacity } from "$parent/siblings/getCache_OfflineMap/lib/mapState/overlayOpacity.svelte";
 

@@ -1,0 +1,20 @@
+{
+	"name": "getcache-maptools",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"_why": "PRIVATE tools pack, not a child: no lib/ (childBoundary discovers children by that shape), never published, only ever compiled by a host tier's dev server. Declaring deps here + membership in fetch/package.json workspaces hoists them to fetch/node_modules, where bare imports resolve by walking UP — same load-bearing pattern as the four children.",
+	"dependencies": {
+		"@capacitor-community/background-geolocation": "^1.2.26",
+		"@capacitor/core": "^8.3.0",
+		"@capacitor/geolocation": "^8.1.0",
+		"@capacitor/local-notifications": "^8.2.0",
+		"gsap": "^3.14.2",
+		"mapbox-gl": "^3.24.0",
+		"svelte-sonner": "^1.0.6"
+	},
+	"devDependencies": {
+		"@types/geojson": "^7946.0.16",
+		"geojson": "^0.5.0"
+	}
+}
