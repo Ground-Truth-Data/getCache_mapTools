@@ -23,8 +23,8 @@
 
 import type { Feature } from "geojson";
 import type { Map as MapboxMap } from "mapbox-gl";
-import { projectFeatureBbox } from "@ground-truth/getcache-onlinemap/lib/mapDraw";
-import { safeFitBounds, safeFlyTo } from "@ground-truth/getcache-onlinemap/lib/safeMap";
+import { projectFeatureBbox } from "$parent/siblings/getCache_OnlineMap/lib/mapDraw";
+import { safeFitBounds, safeFlyTo } from "$parent/siblings/getCache_OnlineMap/lib/safeMap";
 
 export type FeatureBbox = {
     minX: number;

@@ -20,19 +20,19 @@ import type { Map as MapboxMap } from "mapbox-gl";
 import type { Feature } from "geojson";
 import { toast } from "svelte-sonner";
 import { reportSyncWarning } from "$lib/mobile/utils/reportSyncError";
-import { safeFitBounds } from "@ground-truth/getcache-onlinemap/lib/safeMap";
+import { safeFitBounds } from "$parent/siblings/getCache_OnlineMap/lib/safeMap";
 import {
     isNullIsland,
     loadFramedMapKey,
     saveFramedMapKey,
-} from "@ground-truth/getcache-offlinemap/lib/mapState/mapViewport";
+} from "$parent/siblings/getCache_OfflineMap/lib/mapState/mapViewport";
 import type { MapStore } from "$lib/mobile/stores/mapStore.svelte";
 import {
     type LngLatBox,
     geometryBounds,
     resolveFeatureBounds,
     unionBox,
-} from "@ground-truth/getcache-offlinemap/lib/mapState/mapFraming";
+} from "$parent/siblings/getCache_OfflineMap/lib/mapState/mapFraming";
 import { applyMapRoute } from "./seeOnMapRouter";
 
 export interface MapFramerDeps {

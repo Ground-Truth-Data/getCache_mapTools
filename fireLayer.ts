@@ -23,7 +23,7 @@
  * rule). It attaches via the `onMapReady` hook the harness already exposes.
  */
 import type * as mapboxgl from "mapbox-gl";
-import { popupCtor } from "@ground-truth/getcache-offlinemap/lib/shared/rendererOf";
+import { popupCtor } from "$parent/siblings/getCache_OfflineMap/lib/shared/rendererOf";
 
 /**
  * The map type this file works against.
@@ -50,48 +50,48 @@ import { popupCtor } from "@ground-truth/getcache-offlinemap/lib/shared/renderer
  */
 // biome-ignore lint/suspicious/noExplicitAny: two renderers, incompatible overload sets — see above
 type FireMap = any;
-import { kmBetween } from "@ground-truth/getcache-offlinemap/lib/shared/kmGeo";
+import { kmBetween } from "$parent/siblings/getCache_OfflineMap/lib/shared/kmGeo";
 import {
 	peekFireArrival,
 	settleFireArrival,
-} from "@ground-truth/getcache-offlinemap/routes/fires/fireArrival";
+} from "$parent/siblings/getCache_OfflineMap/routes/fires/fireArrival";
 import {
 	classifyPending,
 	peekUrbanVerdict,
-} from "@ground-truth/getcache-offlinemap/routes/fires/fireClassifyCache";
+} from "$parent/siblings/getCache_OfflineMap/routes/fires/fireClassifyCache";
 import {
 	buildClusterCard,
 	buildHotspotCard,
 	type CardRow,
-} from "@ground-truth/getcache-offlinemap/routes/fires/fireHotspotCopy";
-import { fireOutlines } from "@ground-truth/getcache-offlinemap/routes/fires/fireOutline";
+} from "$parent/siblings/getCache_OfflineMap/routes/fires/fireHotspotCopy";
+import { fireOutlines } from "$parent/siblings/getCache_OfflineMap/routes/fires/fireOutline";
 import {
 	distKm,
 	fireFeatureCollection,
 	HARD_CUTOFF_KM,
-} from "@ground-truth/getcache-offlinemap/routes/fires/fireRelevance";
-import type { TrendBand } from "@ground-truth/getcache-offlinemap/routes/fires/fireSeverity";
-import { FIRE_TRIGGER_KM } from "@ground-truth/getcache-offlinemap/lib/shared/liveAnchor";
+} from "$parent/siblings/getCache_OfflineMap/routes/fires/fireRelevance";
+import type { TrendBand } from "$parent/siblings/getCache_OfflineMap/routes/fires/fireSeverity";
+import { FIRE_TRIGGER_KM } from "$parent/siblings/getCache_OfflineMap/lib/shared/liveAnchor";
 import {
 	peekPlaces,
 	setPlacesRegion,
 	warmPlaces,
-} from "@ground-truth/getcache-offlinemap/lib/places/placeIndex";
-import { placeReference } from "@ground-truth/getcache-offlinemap/lib/places/placeReference";
-import { satImageKey } from "@ground-truth/getcache-offlinemap/lib/onPhone/satellite/satelliteImage";
-import { beginWork } from "@ground-truth/getcache-offlinemap/lib/shared/workMeter.svelte.js";
+} from "$parent/siblings/getCache_OfflineMap/lib/places/placeIndex";
+import { placeReference } from "$parent/siblings/getCache_OfflineMap/lib/places/placeReference";
+import { satImageKey } from "$parent/siblings/getCache_OfflineMap/lib/onPhone/satellite/satelliteImage";
+import { beginWork } from "$parent/siblings/getCache_OfflineMap/lib/shared/workMeter.svelte";
 import {
 	loadStaticMask,
 	peekStaticMask,
 	warmStaticMask,
-} from "@ground-truth/getcache-offlinemap/routes/fires/masks/staticHeatIndex";
-import { isStaticSource } from "@ground-truth/getcache-offlinemap/routes/fires/masks/staticHeatSources";
-import { isUrban } from "@ground-truth/getcache-offlinemap/routes/fires/masks/urbanExclusion";
+} from "$parent/siblings/getCache_OfflineMap/routes/fires/masks/staticHeatIndex";
+import { isStaticSource } from "$parent/siblings/getCache_OfflineMap/routes/fires/masks/staticHeatSources";
+import { isUrban } from "$parent/siblings/getCache_OfflineMap/routes/fires/masks/urbanExclusion";
 import {
 	loadUrban,
 	peekUrban,
 	setUrbanRegion,
-} from "@ground-truth/getcache-offlinemap/routes/fires/masks/urbanIndex";
+} from "$parent/siblings/getCache_OfflineMap/routes/fires/masks/urbanIndex";
 import {
 	FIRE_RADIUS_KM,
 	fireCoverage,
@@ -100,10 +100,10 @@ import {
 	isCoverageFresh,
 	unionHotspots,
 	writeFireCache,
-} from "@ground-truth/getcache-offlinemap/routes/fires/fireCache";
-import { fetchAreaFires } from "@ground-truth/getcache-offlinemap/lib/r2Worker/local_dev/fires/fireFetch";
+} from "$parent/siblings/getCache_OfflineMap/routes/fires/fireCache";
+import { fetchAreaFires } from "$parent/siblings/getCache_OfflineMap/lib/worker/worker-local-dev/fires/fireFetch";
 import { createMapStore } from "$lib/mobile/stores/mapStore.svelte";
-import { overlayVisibility } from "@ground-truth/getcache-offlinemap/lib/mapState/overlayVisibility.svelte.js";
+import { overlayVisibility } from "$parent/siblings/getCache_OfflineMap/lib/mapState/overlayVisibility.svelte";
 import { vlog } from "$lib/mobile/utils/verboseLog";
 import { fireFollowsCamera, fireOrigins } from "./fireOrigins";
 

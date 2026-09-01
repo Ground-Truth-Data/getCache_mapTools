@@ -15,7 +15,7 @@ import mapboxgl from "mapbox-gl";
 import { toast } from "svelte-sonner";
 import { Capacitor } from "@capacitor/core";
 import { Geolocation } from "@capacitor/geolocation";
-import { safeFlyTo } from "@ground-truth/getcache-onlinemap/lib/safeMap";
+import { safeFlyTo } from "$parent/siblings/getCache_OnlineMap/lib/safeMap";
 import { reportSwallowed } from "$lib/mobile/utils/reportSwallowed";
 import { reportGeoError } from "$lib/mobile/utils/reportGeoError";
 import { gpsIsGranted } from "$lib/mobile/utils/captureGps";

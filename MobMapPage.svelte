@@ -8,25 +8,25 @@ const mapPorts = retreeverMapPorts();
 import { onMount } from "svelte";
 import { dev } from "$app/environment";
 import { goto, replaceState } from "$app/navigation";
-import { MAP_CONFIG } from "@ground-truth/getcache-onlinemap/lib/MAP_CONFIG";
-import { initializeMap } from "@ground-truth/getcache-onlinemap/lib/mapInit";
-import { NiceScaleBarControl } from "@ground-truth/getcache-onlinemap/lib/mapScaleBar";
+import { MAP_CONFIG } from "$parent/siblings/getCache_OnlineMap/lib/MAP_CONFIG";
+import { initializeMap } from "$parent/siblings/getCache_OnlineMap/lib/mapInit";
+import { NiceScaleBarControl } from "$parent/siblings/getCache_OnlineMap/lib/mapScaleBar";
 import MapDrawControls from "./MapDrawControls.svelte";
-import MapLegend from "@ground-truth/getcache-offlinemap/lib/mapUi/MapLegend.svelte";
-import MapTopControls from "@ground-truth/getcache-offlinemap/lib/mapUi/MapTopControls.svelte";
-import { attachDoubleTapToPin } from "@ground-truth/getcache-offlinemap/lib/shared/doubleTapToPin";
-import { attachMapErrorCapture } from "@ground-truth/getcache-offlinemap/lib/shared/mapboxErrorCapture";
+import MapLegend from "$parent/siblings/getCache_OfflineMap/lib/mapUi/MapLegend.svelte";
+import MapTopControls from "$parent/siblings/getCache_OfflineMap/lib/mapUi/MapTopControls.svelte";
+import { attachDoubleTapToPin } from "$parent/siblings/getCache_OfflineMap/lib/shared/doubleTapToPin";
+import { attachMapErrorCapture } from "$parent/siblings/getCache_OfflineMap/lib/shared/mapboxErrorCapture";
 import {
     applyCameraOrientation,
     attachCameraPersistence,
     loadCamera,
     MAP_HOME_CENTER,
-} from "@ground-truth/getcache-offlinemap/lib/mapState/mapViewport";
+} from "$parent/siblings/getCache_OfflineMap/lib/mapState/mapViewport";
 import {
     ONLINE_MAP_ROUTE,
     OFFLINE_MAP_ROUTE,
     saveLastMapRoute,
-} from "@ground-truth/getcache-offlinemap/lib/mapState/lastMapRoute.svelte.js";
+} from "$parent/siblings/getCache_OfflineMap/lib/mapState/lastMapRoute.svelte";
 // TYPE-ONLY import: erased at build time, so it does NOT pull the 1,397-line
 // fireLayer module (and its whole dependency graph) into this route's bundle.
 // The implementation is loaded lazily below, and ONLY when fires are enabled —
@@ -35,12 +35,12 @@ import {
 // runtime-disabled layer is not free: it costs parse, evaluate and retention
 // for code that can never run.
 import type { FireLayerHandle } from "./fireLayer";
-import { overlayVisibility } from "@ground-truth/getcache-offlinemap/lib/mapState/overlayVisibility.svelte.js";
-import OfflineWorkMeter from "@ground-truth/getcache-offlinemap/lib/shared/OfflineWorkMeter.svelte";
-import OfflineConfigPanel from "@ground-truth/getcache-offlinemap/lib/panels/OfflineConfigPanel.svelte";
+import { overlayVisibility } from "$parent/siblings/getCache_OfflineMap/lib/mapState/overlayVisibility.svelte";
+import OfflineWorkMeter from "$parent/siblings/getCache_OfflineMap/lib/shared/OfflineWorkMeter.svelte";
+import OfflineConfigPanel from "$parent/siblings/getCache_OfflineMap/lib/panels/OfflineConfigPanel.svelte";
 import { fireOrigins } from "./fireOrigins";
 import { createMapStore } from "$lib/mobile/stores/mapStore.svelte";
-import { onlineMapHitchState } from "@ground-truth/getcache-offlinemap/lib/mapState/onlineMapHitchState.svelte.js";
+import { onlineMapHitchState } from "$parent/siblings/getCache_OfflineMap/lib/mapState/onlineMapHitchState.svelte";
 import type { MapDemoKey } from "./mapDemoScheduler.svelte";
 
 // When set (the anime/<key> showcase routes), MapDrawControls loops that one

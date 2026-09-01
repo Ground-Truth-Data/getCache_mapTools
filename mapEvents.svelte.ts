@@ -24,9 +24,9 @@ import {
 	hitTestCompleted,
 	setupDrawSourcesAndLayers,
 	setVertexHandlesForFeature,
-} from "@ground-truth/getcache-onlinemap/lib/mapDraw";
-import { gridDotAt } from "@ground-truth/getcache-onlinemap/lib/mapGrid";
-import { isFiniteLngLat } from "@ground-truth/getcache-onlinemap/lib/safeMap";
+} from "$parent/siblings/getCache_OnlineMap/lib/mapDraw";
+import { gridDotAt } from "$parent/siblings/getCache_OnlineMap/lib/mapGrid";
+import { isFiniteLngLat } from "$parent/siblings/getCache_OnlineMap/lib/safeMap";
 import type { PopoverPositioning } from "./popoverPositioning.svelte";
 
 type MapStore = ReturnType<typeof createMapStore>;
