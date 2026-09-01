@@ -1,5 +1,5 @@
 {
-	"name": "@ground-truth/getcache-maptools",
+	"name": "getcache-maptools",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",

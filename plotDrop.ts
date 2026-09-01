@@ -26,7 +26,7 @@ import {
 } from "$lib/mobile/stores/quality704Plots.svelte.js";
 import { adoptMapIntoActiveSurvey } from "$lib/mobile/stores/quality704Surveys.svelte.js";
 import { metersBetween } from "./tracking.svelte";
-import { encodePlusCode } from "@ground-truth/getcache-onlinemap/lib/plusCode";
+import { encodePlusCode } from "$parent/siblings/getCache_OnlineMap/lib/plusCode";
 
 type MapStore = ReturnType<typeof createMapStore>;
 

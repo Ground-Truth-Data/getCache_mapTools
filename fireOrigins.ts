@@ -24,12 +24,12 @@
  * touch". Sorting maps would let opening an old map for a second outrank the
  * block you just drew.
  */
-import { anchorsOf, isBlobAnchor } from "@ground-truth/getcache-offlinemap/lib/shared/anchors";
+import { anchorsOf, isBlobAnchor } from "$parent/siblings/getCache_OfflineMap/lib/shared/anchors";
 import {
 	type FireAnchorInput,
 	fireAnchors,
-} from "@ground-truth/getcache-offlinemap/routes/fires/fireRelevance";
-import { readStoredFix } from "@ground-truth/getcache-offlinemap/lib/shared/liveFix";
+} from "$parent/siblings/getCache_OfflineMap/routes/fires/fireRelevance";
+import { readStoredFix } from "$parent/siblings/getCache_OfflineMap/lib/shared/liveFix";
 
 /**
  * How far back a touched feature still counts as ground you have a stake in.
