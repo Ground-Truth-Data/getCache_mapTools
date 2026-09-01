@@ -101,7 +101,7 @@ import {
 	unionHotspots,
 	writeFireCache,
 } from "@ground-truth/getcache-offlinemap/routes/fires/fireCache";
-import { fetchAreaFires } from "@ground-truth/getcache-offlinemap/lib/r2Worker/local_dev/fires/fireFetch";
+import { fetchAreaFires } from "@ground-truth/getcache-offlinemap/lib/worker/worker-local-dev/fires/fireFetch";
 import { createMapStore } from "$lib/mobile/stores/mapStore.svelte";
 import { overlayVisibility } from "@ground-truth/getcache-offlinemap/lib/mapState/overlayVisibility.svelte.js";
 import { vlog } from "$lib/mobile/utils/verboseLog";
