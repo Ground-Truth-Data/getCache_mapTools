@@ -36,9 +36,9 @@ import {
 	type FireDiscV2,
 	fireDiscKey,
 	readFireDisc,
-} from "$parent/siblings/getCache_OfflineMap/routes/fires/v2/fireCacheV2";
-import { beginWork } from "$parent/siblings/getCache_OfflineMap/lib/shared/workMeter.svelte";
-import { kmBetween } from "$parent/siblings/getCache_OfflineMap/lib/shared/kmGeo";
+} from "@ground-truth/getcache-offlinemap/routes/fires/v2/fireCacheV2";
+import { beginWork } from "@ground-truth/getcache-offlinemap/lib/shared/workMeter.svelte.js";
+import { kmBetween } from "@ground-truth/getcache-offlinemap/lib/shared/kmGeo";
 import { vlog } from "$lib/mobile/utils/verboseLog";
 
 /** Layer + source ids. One set per map, so the two maps never collide. */

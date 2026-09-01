@@ -50,9 +50,9 @@ import {
 	pendingDropRowKey,
 	rekeyPlotRowsToLocodeKeys,
 } from "$lib/mobile/stores/quality704Plots.svelte.js";
-import PlotMapPopover from "$parent/siblings/getCache_OfflineMap/lib/mapUi/PlotMapPopoverV2.svelte";
+import PlotMapPopover from "@ground-truth/getcache-offlinemap/lib/mapUi/PlotMapPopoverV2.svelte";
 import { locodeFromPlotKey } from "$lib/mobile/stores/plotKey";
-import { markerCtor } from "$parent/siblings/getCache_OfflineMap/lib/shared/rendererOf";
+import { markerCtor } from "@ground-truth/getcache-offlinemap/lib/shared/rendererOf";
 
 type MapStore = ReturnType<typeof createMapStore>;
 

@@ -21,7 +21,7 @@ import type { Feature } from "geojson";
 import type { Map as MapboxMap } from "mapbox-gl";
 import type { PopoverPositioning } from "./popoverPositioning.svelte";
 import type { createMapStore } from "$lib/mobile/stores/mapStore.svelte";
-import FeaturePopover from "$parent/siblings/getCache_OfflineMap/lib/mapUi/FeatureMapPopover.svelte";
+import FeaturePopover from "@ground-truth/getcache-offlinemap/lib/mapUi/FeatureMapPopover.svelte";
 import TilesPinPopover from "$lib/mobile/components/TilesPinPopover.svelte";
 import ConfirmModal from "$lib/mobile/components/ui/ConfirmModal.svelte";
 import {
