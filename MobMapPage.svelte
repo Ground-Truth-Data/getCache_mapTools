@@ -7,7 +7,7 @@ import { retreeverMapPorts } from "$lib/mobile/offline/host/retreeverMapPorts";
 const mapPorts = retreeverMapPorts();
 import { onMount } from "svelte";
 import { dev } from "$app/environment";
-import { goto } from "$app/navigation";
+import { goto, replaceState } from "$app/navigation";
 import { MAP_CONFIG } from "$parent/siblings/getCache_OnlineMap/lib/MAP_CONFIG";
 import { initializeMap } from "$parent/siblings/getCache_OnlineMap/lib/mapInit";
 import { NiceScaleBarControl } from "$parent/siblings/getCache_OnlineMap/lib/mapScaleBar";
@@ -235,7 +235,12 @@ onMount(() => {
             loadMarkers: false,
             autoRotate: false,
             globeProjection: false,
-            enableHash: false,
+            // Camera in the URL (#zoom/lat/lng) so a tier switch — a
+            // different ORIGIN, so loadCamera()'s storage doesn't carry over —
+            // lands on the same spot. A hash present at boot beats savedCam
+            // (mapInit applies it after these initials).
+            enableHash: true,
+            writeHash: (url: string) => replaceState(url, {}),
             scrollZoom: true,
             initialCenter: savedCam?.center ?? MAP_HOME_CENTER,
             initialZoom: savedCam?.zoom ?? DEFAULT_ZOOM,
