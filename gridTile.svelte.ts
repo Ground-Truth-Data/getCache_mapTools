@@ -19,7 +19,7 @@ import {
     updateGrid,
     type GridMode,
     type GridUpdateResult,
-} from "$parent/siblings/getCache_OnlineMap/lib/mapGrid";
+} from "@ground-truth/getcache-onlinemap/lib/mapGrid";
 import { loadAppState, updateAppState } from "$mobRoutes/db/mutators";
 
 export type { GridMode };

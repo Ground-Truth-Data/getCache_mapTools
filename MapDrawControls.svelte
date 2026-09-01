@@ -22,14 +22,14 @@ import { PopoverPositioning } from "./popoverPositioning.svelte";
 import {
     POPOVER_TOP_RESERVE,
     POPOVER_BOTTOM_RESERVE,
-} from "$parent/siblings/getCache_OfflineMap/lib/panels/MapPopoverShell.svelte";
+} from "@ground-truth/getcache-offlinemap/lib/panels/MapPopoverShell.svelte";
 import { createMapFramer } from "./mapFramer";
 import { shareFeatureKML, type MapShareFormat } from "$lib/mobile/utils/kmzExport";
 import { IMPORTABLE_ACCEPT } from "$lib/mobile/import/importRouter";
 import {
     safeEaseTo,
     safeFlyTo,
-} from "$parent/siblings/getCache_OnlineMap/lib/safeMap";
+} from "@ground-truth/getcache-onlinemap/lib/safeMap";
 import { ensureUsername } from "$lib/mobile/utils/ensureUsername.svelte";
 import { loadUserProfile } from "$mobRoutes/db/index";
 import MapDrawDemo from "./MapDrawDemo.svelte";
@@ -38,15 +38,15 @@ import {
 	type MapDemoKey,
 } from "./mapDemoScheduler.svelte";
 import { RETREEVER_STAMP } from "$mobRoutes/db/tinySchema";
-import SnakeRuler from "$parent/siblings/getCache_OfflineMap/lib/mapUi/SnakeRuler.svelte";
-import SelfCoordPill from "$parent/siblings/getCache_OfflineMap/lib/mapUi/SelfCoordPill.svelte";
+import SnakeRuler from "@ground-truth/getcache-offlinemap/lib/mapUi/SnakeRuler.svelte";
+import SelfCoordPill from "@ground-truth/getcache-offlinemap/lib/mapUi/SelfCoordPill.svelte";
 import { type ShareFormat } from "$lib/mobile/components/ui/SharePicker.svelte";
 import { copyToClipboard } from "$lib/mobile/utils/copyToClipboard";
-import DrawPalette from "$parent/siblings/getCache_OfflineMap/lib/mapUi/DrawPalette.svelte";
-import TrackingStrip from "$parent/siblings/getCache_OfflineMap/lib/mapUi/TrackingStrip.svelte";
-import { createOverlayManager } from "$parent/siblings/getCache_OfflineMap/lib/mapState/overlayManager.svelte";
-import { createVertexDrag } from "$parent/siblings/getCache_OfflineMap/lib/mapState/vertexDrag";
-import { createPinMarkers } from "$parent/siblings/getCache_OfflineMap/lib/mapState/pinMarkers";
+import DrawPalette from "@ground-truth/getcache-offlinemap/lib/mapUi/DrawPalette.svelte";
+import TrackingStrip from "@ground-truth/getcache-offlinemap/lib/mapUi/TrackingStrip.svelte";
+import { createOverlayManager } from "@ground-truth/getcache-offlinemap/lib/mapState/overlayManager.svelte.js";
+import { createVertexDrag } from "@ground-truth/getcache-offlinemap/lib/mapState/vertexDrag";
+import { createPinMarkers } from "@ground-truth/getcache-offlinemap/lib/mapState/pinMarkers";
 // Imported for its :global badge CSS — the plot pins (built imperatively in
 // pinMarkers.ts) emit StatusDots' class contract, so this ships the bulb styles.
 import StatusDots from "$lib/mobile/components/quality704/StatusDots.svelte";
@@ -65,8 +65,8 @@ import { onMount } from "svelte";
 import { page } from "$app/state";
 import { createCacheStore } from "$lib/mobile/stores/cacheStore.svelte";
 import { createMapStore } from "$lib/mobile/stores/mapStore.svelte";
-import { overlayVisibility } from "$parent/siblings/getCache_OfflineMap/lib/mapState/overlayVisibility.svelte";
-import { polygonOpacity } from "$parent/siblings/getCache_OfflineMap/lib/mapState/overlayOpacity.svelte";
+import { overlayVisibility } from "@ground-truth/getcache-offlinemap/lib/mapState/overlayVisibility.svelte.js";
+import { polygonOpacity } from "@ground-truth/getcache-offlinemap/lib/mapState/overlayOpacity.svelte.js";
 import PlotLayer from "./PlotLayer.svelte";
 import FeatureLayer from "./FeatureLayer.svelte";
 import { createMapEvents } from "./mapEvents.svelte";
@@ -83,11 +83,11 @@ import {
     setVertexHandlesForFeature,
     setupDrawSourcesAndLayers,
     wireBoundaryPinNavigation,
-} from "$parent/siblings/getCache_OnlineMap/lib/mapDraw";
+} from "@ground-truth/getcache-onlinemap/lib/mapDraw";
 import {
     setSelectedAreaLabel,
     syncAreaLabels,
-} from "$parent/siblings/getCache_OnlineMap/lib/areaLabels";
+} from "@ground-truth/getcache-onlinemap/lib/areaLabels";
 
 let {
     map = $bindable(null),

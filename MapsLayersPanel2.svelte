@@ -32,7 +32,7 @@
         type InboundPackage as Package,
     } from "$mobRoutes/db/index";
 
-    import { overlayOpacity } from "$parent/siblings/getCache_OfflineMap/lib/mapState/overlayOpacity.svelte";
+    import { overlayOpacity } from "@ground-truth/getcache-offlinemap/lib/mapState/overlayOpacity.svelte.js";
 
     let {
         mapStore,
