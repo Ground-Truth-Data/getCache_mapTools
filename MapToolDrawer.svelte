@@ -13,6 +13,7 @@ import { BASEMAP_OPTIONS } from "./basemapPicker.svelte";
 import type { createBasemapPicker } from "./basemapPicker.svelte";
 import type { createGridTile } from "./gridTile.svelte";
 import { tracking } from "./tracking.svelte";
+import tracksIconUrl from "$parent/siblings/getCache_OnlineMap/lib/assets/mobileAssets/tracks_goldV3.webp";
 import Card from "$lib/mobile/components/ui/Card.svelte";
 import FadedDivider from "$lib/mobile/components/ui/FadedDivider.svelte";
 import IconBox from "$lib/mobile/components/ui/IconBox.svelte";
@@ -171,7 +172,7 @@ let {
 	<Card variant={tracking.active ? "active" : "default"} onclick={toggleTracking}>
 		{#snippet icon()}
 			<IconBox>
-				<MaskedIcon src="/mobileAssets/tracks_goldV3.webp" size={34} />
+				<MaskedIcon src={tracksIconUrl} size={34} />
 			</IconBox>
 		{/snippet}
 		<span class="rt-text-pill">TRACKS</span>

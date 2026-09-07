@@ -103,6 +103,7 @@ let {
     armKind = $bindable(null),
     onMeasureDrag = undefined,
     onLegend = undefined,
+    onUserFix = undefined,
 }: {
     map: MapboxMap | null;
     // EARLY MAP HANDLE — the same mapboxgl.Map, but delivered at CONSTRUCTION
@@ -158,6 +159,8 @@ let {
     // Optional LEGEND tile. Only the offline route passes this — it opens the
     // map's colour-key card. When undefined (the live /map), no LEGEND tile renders.
     onLegend?: (() => void) | undefined;
+    /** Every live GPS fix from the blue dot's one watch — the offline map's follow-me prefetch. */
+    onUserFix?: ((lng: number, lat: number) => void) | undefined;
 } = $props();
 
 // ── User-location (blue dot) ────────────────────────────────────────────
@@ -168,7 +171,11 @@ let {
 // THIRD door onto the same one action (LOCATE tile, hospital popup's "My
 // location", and now the dot itself). It reads the fix already in memory, so it
 // never prompts and never moves the camera; `showSelfCoord` is hoisted.
-const userLocator = createUserLocator(() => map ?? locMap, () => showSelfCoord());
+const userLocator = createUserLocator(
+    () => map ?? locMap,
+    () => showSelfCoord(),
+    (lng, lat) => onUserFix?.(lng, lat),
+);
 
 $effect(() => {
     if (!map) return;

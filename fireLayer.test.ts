@@ -23,19 +23,20 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 /**
- * The gauge's path builder, mirrored.
+ * The gauge's level clamp, mirrored — it yields the FILE the level maps to.
  *
  * `fireLayer.ts` cannot be imported here: it reaches Supabase via
  * `$env/static/public`, which only exists inside a SvelteKit build. That is why
  * this whole file scans SOURCE TEXT rather than calling the module.
  *
  * The mirror is guarded — `matches fireLayer.ts's own clamp` below re-derives
- * these two lines from the real source, so a drift fails loudly instead of
- * testing a copy that no longer resembles the app.
+ * the clamp and the five imports from the real source, so a drift fails loudly
+ * instead of testing a copy that no longer resembles the app.
  */
+const INTENSITY_DIR = "../getCache_OfflineMap/lib/assets/fire_intensity";
 function intensityIconSrc(level: number): string {
 	const lvl = Math.min(5, Math.max(1, Math.round(level)));
-	return `/mobileAssets/fire_intensity/${lvl}-fire_intensity.webp`;
+	return `${INTENSITY_DIR}/${lvl}-fire_intensity.webp`;
 }
 
 const raw = readFileSync(
@@ -52,7 +53,7 @@ const src = raw.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
 const mapInitSrc = readFileSync(
 	fileURLToPath(
 		new URL(
-			"../../../../../getCache_OnlineMap/lib/mapInit.ts",
+			"../getCache_OnlineMap/lib/mapInit.ts",
 			import.meta.url,
 		),
 	),
@@ -266,8 +267,13 @@ describe("fireLayer — intensity gauge + trend arrow", () => {
 		// below would keep passing against a stale copy. Pin the two things that
 		// carry the behaviour.
 		expect(src).toContain("Math.min(5, Math.max(1, Math.round(level)))");
-		expect(src).toContain("-fire_intensity.webp");
-		expect(src).toContain('"/mobileAssets/fire_intensity"');
+		// Imported, never a leading-slash URL: the art travels with the child that owns it.
+		expect(src).not.toMatch(/\/mobileAssets\/fire_intensity/);
+		for (let lvl = 1; lvl <= 5; lvl++) {
+			expect(src).toContain(
+				`from "$parent/siblings/getCache_OfflineMap/lib/assets/fire_intensity/${lvl}-fire_intensity.webp"`,
+			);
+		}
 	});
 
 	it("clamps to the five files that actually exist", () => {
@@ -283,13 +289,11 @@ describe("fireLayer — intensity gauge + trend arrow", () => {
 	});
 
 	it("every level it can emit is a file that EXISTS on disk", () => {
-		// The gauge is built by string concatenation, so nothing else catches a
-		// renamed or missing asset until it 404s in front of a user.
+		// A renamed or missing file would fail the build now that the art is
+		// imported, but only in a tier that compiles this layer — say it here.
 		for (let lvl = 1; lvl <= 5; lvl++) {
-			const rel = intensityIconSrc(lvl).replace(/^\//, "");
-			const abs = fileURLToPath(
-				new URL(`../../../../static/${rel}`, import.meta.url),
-			);
+			const rel = intensityIconSrc(lvl);
+			const abs = fileURLToPath(new URL(rel, import.meta.url));
 			expect(existsSync(abs), `${rel} is missing`).toBe(true);
 		}
 	});
@@ -329,7 +333,7 @@ describe("fireLayer — intensity gauge + trend arrow", () => {
  * cost no legibility.
  */
 describe("fireLayer — no fade, ever, on a fire that is drawn", () => {
-	const src = readFileSync("src/routes/(getcache)/map/fireLayer.ts", "utf8");
+	const src = raw;
 	/** Comments out — assert on CODE, never on the prose explaining the code. */
 	const strip = (t: string): string => t.replace(/\/\/[^\n]*/g, "");
 	const flame = src.slice(src.indexOf("id: ids.flame"));

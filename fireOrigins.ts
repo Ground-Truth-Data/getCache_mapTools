@@ -24,12 +24,15 @@
  * touch". Sorting maps would let opening an old map for a second outrank the
  * block you just drew.
  */
-import { anchorsOf, isBlobAnchor } from "$parent/siblings/getCache_OfflineMap/lib/shared/anchors";
+import {
+	anchorsOf,
+	isBlobAnchor,
+} from "$parent/siblings/getCache_OfflineMap/lib/shared/anchors";
+import { readStoredFix } from "$parent/siblings/getCache_OfflineMap/lib/shared/liveFix";
 import {
 	type FireAnchorInput,
 	fireAnchors,
 } from "$parent/siblings/getCache_OfflineMap/routes/fires/fireRelevance";
-import { readStoredFix } from "$parent/siblings/getCache_OfflineMap/lib/shared/liveFix";
 
 /**
  * How far back a touched feature still counts as ground you have a stake in.
@@ -101,6 +104,15 @@ export function fireOrigins(
 	maps: ReadonlyArray<AnchorSourceMap>,
 	now: number = Date.now(),
 ): Array<readonly [number, number]> {
+	const anchors = anchorOrigins(maps, now);
+	return anchors.length > 0 ? anchors : [mapCentre];
+}
+
+/** The anchor set alone — empty when there is no fix and no touched ground. For services with no camera to fall back on (the hospital pass). */
+export function anchorOrigins(
+	maps: ReadonlyArray<AnchorSourceMap>,
+	now: number = Date.now(),
+): Array<readonly [number, number]> {
 	const fix = readStoredFix(now);
 	const candidates: FireAnchorInput[] = [
 		// The live fix outranks everything — it is where you ARE, and its slot is
@@ -108,8 +120,7 @@ export function fireOrigins(
 		...(fix ? [{ at: fix, touchedAt: Number.POSITIVE_INFINITY }] : []),
 		...anchorCandidates(maps, now),
 	];
-	const anchors = fireAnchors(candidates);
-	return anchors.length > 0 ? anchors : [mapCentre];
+	return fireAnchors(candidates);
 }
 
 /**

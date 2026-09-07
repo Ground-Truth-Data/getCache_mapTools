@@ -201,7 +201,7 @@ export function createMapImporter(deps: MapImporterDeps): MapImporter {
                 return;
             }
             if (outcome.kind === "gdal-handoff") {
-                await goto("/map/gdal");
+                await goto("/app/map/gdal");
                 return;
             }
             if (outcome.kind === "pdf") {

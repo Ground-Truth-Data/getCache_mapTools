@@ -23,6 +23,12 @@
  * rule). It attaches via the `onMapReady` hook the harness already exposes.
  */
 import type * as mapboxgl from "mapbox-gl";
+import fireIconUrl from "$parent/siblings/getCache_OfflineMap/lib/assets/fire_icon.webp";
+import fireIntensity1 from "$parent/siblings/getCache_OfflineMap/lib/assets/fire_intensity/1-fire_intensity.webp";
+import fireIntensity2 from "$parent/siblings/getCache_OfflineMap/lib/assets/fire_intensity/2-fire_intensity.webp";
+import fireIntensity3 from "$parent/siblings/getCache_OfflineMap/lib/assets/fire_intensity/3-fire_intensity.webp";
+import fireIntensity4 from "$parent/siblings/getCache_OfflineMap/lib/assets/fire_intensity/4-fire_intensity.webp";
+import fireIntensity5 from "$parent/siblings/getCache_OfflineMap/lib/assets/fire_intensity/5-fire_intensity.webp";
 import { popupCtor } from "$parent/siblings/getCache_OfflineMap/lib/shared/rendererOf";
 
 /**
@@ -222,7 +228,7 @@ const mapStore = createMapStore();
 let lastPingedAt: number | null = null;
 
 const FIRE_ICON = "rt-fire-flame";
-const FIRE_ICON_URL = "/mobileAssets/fire_icon.webp";
+const FIRE_ICON_URL = fireIconUrl;
 
 /**
  * Load the flame sprite once per style.
@@ -977,7 +983,7 @@ function cardHtml(title: string, rows: readonly CardRow[]): string {
 /**
  * The intensity gauge is a SUPPLIED ARTWORK SET, one file per level.
  *
- * `static/mobileAssets/fire_intensity/{1..5}-fire_intensity.webp` — a ring that
+ * `getCache_OfflineMap/lib/assets/fire_intensity/{1..5}-fire_intensity.webp` — a ring that
  * fills clockwise and walks gold → orange → red as the level climbs.
  *
  * ⚠️ This REPLACED a hand-drawn SVG ring, and the reason is worth keeping. At
@@ -989,12 +995,12 @@ function cardHtml(title: string, rows: readonly CardRow[]): string {
  * Do not reintroduce a drawn ring beside these. The number ("5 of 5") is still
  * the accessible carrier; the gauge is the at-a-glance echo.
  */
-const INTENSITY_ICON_BASE = "/mobileAssets/fire_intensity";
+const INTENSITY_ICONS = [fireIntensity1, fireIntensity2, fireIntensity3, fireIntensity4, fireIntensity5];
 
-/** Artwork path for a level, clamped to the five that exist. */
+/** Artwork URL for a level, clamped to the five that exist. */
 export function intensityIconSrc(level: number): string {
 	const lvl = Math.min(5, Math.max(1, Math.round(level)));
-	return `${INTENSITY_ICON_BASE}/${lvl}-fire_intensity.webp`;
+	return INTENSITY_ICONS[lvl - 1];
 }
 
 /**
@@ -1121,50 +1127,10 @@ export interface FirePopup {
  * is nothing fresh covering the current view. Returns a teardown function that
  * also carries `repaint()`.
  */
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * 🔬 FIRES OFF — TEMPORARY, WHILE THE MEMORY HUNT IS ON. NOT A FIX.
- *
- * MEASURED 2026-08-11 on /mobile/map (the ONLINE map, Mapbox — so this is NOT
- * the MapLibre port): Main VM instance **831 MB climbing at 2.8 MB/s**, total
- * JS heap 871 MB, peak 2024 MB, spread 1325 MB. The map debugger's own timing
- * row read `fire paint 5 · 43ms · 10.7s` — i.e. the fire layer is the thing
- * doing sustained work while the page sits there.
- *
- * ONE flag here rather than a flag per route: there are two callers
- * (MobMapPage.svelte:229 online, offlinev4/+page.svelte:1084 offline) and the
- * previous attempt at this put a `FIRE_LAYER_ENABLED` const in only ONE of
- * them, which is why fires were "off" for weeks on one map and quietly on for
- * the other. Killing it at the entry point means neither route can start it.
- *
- * Everything below is untouched: teardown, repaint, the handle shape. Callers
- * keep working — they just get an inert handle.
- *
- * ⚠️ Known-suspicious even before this: `unionHotspots` (v4FireCache.ts) has
- * TWO FAILING TESTS on a clean tree — "scales LINEARLY in disc count" measured
- * 4.14× against a <2.5× bound, and "absorbs a realistic full cache without
- * millions of trig calls" measured 1,065,750 calls against a <147,000 bound.
- * That is the documented 119%-CPU bug, currently REGRESSED. Fix that before
- * turning this back on.
- *
- * TO RESTORE: set FIRES_ENABLED = true. The original call path is unchanged.
- * ═══════════════════════════════════════════════════════════════════════════
- */
-const FIRES_ENABLED = false;
-
-/** An inert handle — same shape, does nothing. Lets every caller's
- *  `detachFire?.()` / `detachFire?.repaint()` keep working untouched. */
-function inertFireHandle(): FireLayerHandle {
-	const noop = (() => {}) as unknown as FireLayerHandle;
-	(noop as unknown as { repaint: () => void }).repaint = () => {};
-	return noop;
-}
-
 export function attachFireLayer(
 	map: FireMap,
 	opts: AttachFireOptions = {},
 ): FireLayerHandle {
-	if (!FIRES_ENABLED) return inertFireHandle();
 	const ids = opts.ids ?? ONLINE_FIRE_IDS;
 	// The offline viewer is a PURE VIEWER: the app-wide bake service owns every
 	// download, so this map must never fetch. Passing `canFetch: false` is what
