@@ -101,7 +101,7 @@ import {
 	unionHotspots,
 	writeFireCache,
 } from "$parent/siblings/getCache_OfflineMap/routes/fires/fireCache";
-import { fetchAreaFires } from "$parent/siblings/getCache_OfflineMap/lib/r2Worker/local_dev/fires/fireFetch";
+import { fetchAreaFires } from "$parent/siblings/getCache_OfflineMap/lib/worker/worker-local-dev/fires/fireFetch";
 import { createMapStore } from "$lib/mobile/stores/mapStore.svelte";
 import { overlayVisibility } from "$parent/siblings/getCache_OfflineMap/lib/mapState/overlayVisibility.svelte";
 import { vlog } from "$lib/mobile/utils/verboseLog";
