@@ -37,7 +37,7 @@ import {
 	createMapDemoScheduler,
 	type MapDemoKey,
 } from "./mapDemoScheduler.svelte";
-import { RETREEVER_STAMP } from "$mobRoutes/db/tinySchema";
+import { MADE_WITH_GETCACHE } from "$mobRoutes/db/tinySchema";
 import SnakeRuler from "$parent/siblings/getCache_OfflineMap/lib/mapUi/SnakeRuler.svelte";
 import SelfCoordPill from "$parent/siblings/getCache_OfflineMap/lib/mapUi/SelfCoordPill.svelte";
 import { type ShareFormat } from "$lib/mobile/components/ui/SharePicker.svelte";
@@ -1041,7 +1041,7 @@ const selfCoordFormats = $derived.by<ShareFormat[]>(() => {
     // other share on this map uses — no parallel export path for "my location".
     const feature: Feature = {
         type: "Feature",
-        properties: { name: "My location", isRetreever: RETREEVER_STAMP },
+        properties: { name: "My location", madeWith: MADE_WITH_GETCACHE },
         geometry: { type: "Point", coordinates: [c.lng, c.lat] },
     };
     return [
@@ -1120,7 +1120,7 @@ function persistMeasure(
         cachedDisplayName ?? undefined,
         cachedDisplayName ?? null,
         kind,
-        { isRetreever: RETREEVER_STAMP },
+        { madeWith: MADE_WITH_GETCACHE },
     );
     const idx = mapStore.features.length - 1;
     setSelectedIndex(idx);
@@ -1215,7 +1215,7 @@ function dropPinAtPoint(lng: number, lat: number): void {
         cachedDisplayName ?? undefined,
         cachedDisplayName ?? null,
         "Pin",
-        { isRetreever: RETREEVER_STAMP },
+        { madeWith: MADE_WITH_GETCACHE },
     );
     const idx = mapStore.features.length - 1;
     setSelectedIndex(idx);
