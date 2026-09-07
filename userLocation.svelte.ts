@@ -191,6 +191,9 @@ export function createUserLocator(
     /** Tap the blue dot → the host shows the coordinate pill. Optional so every
      *  other caller (tests, demo scheduler) keeps the old one-arg shape. */
     onDotTap?: () => void,
+    /** Every LIVE fix, whichever path delivered it. The offline map's follow-me
+     *  prefetch reads this rather than opening a second watch. */
+    onFix?: (lng: number, lat: number) => void,
 ): UserLocator {
     let geolocateControl: unknown = null;
     let userLocationMarker: mapboxgl.Marker | null = null;
@@ -242,6 +245,7 @@ export function createUserLocator(
         if (!opts?.staleSeed) {
             hasLiveFix = true;
             persistFix(lng, lat);
+            onFix?.(lng, lat);
         }
         const map = getMap();
         if (!map) return;
@@ -465,6 +469,7 @@ export function createUserLocator(
                     if (Number.isFinite(lng) && Number.isFinite(lat)) {
                         lastFix = [lng, lat];
                         hasLiveFix = true;
+                        onFix?.(lng, lat);
                     }
                 });
                 geolocateControl = ctrl;

@@ -584,7 +584,7 @@ function spawnPinStar(container: HTMLElement, x: number, y: number): void {
 			pendingPlotNo = null;
 			pendingCoord = null;
 			pendingBbox = null;
-			goto(`/quality704?focusPlot=${plotNo}`);
+			goto(`/app/quality704?focusPlot=${plotNo}`);
 		}}
 	/>
 {/if}
@@ -613,7 +613,7 @@ function spawnPinStar(container: HTMLElement, x: number, y: number): void {
 			const q = sk
 				? `survey=${encodeURIComponent(sk)}&focusPlot=${plotNo}`
 				: `focusPlot=${plotNo}`;
-			goto(`/quality704?${q}`);
+			goto(`/app/quality704?${q}`);
 		}}
 	/>
 {/if}

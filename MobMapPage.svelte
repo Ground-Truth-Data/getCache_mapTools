@@ -11,6 +11,7 @@ import { goto, replaceState } from "$app/navigation";
 import { MAP_CONFIG } from "$parent/siblings/getCache_OnlineMap/lib/MAP_CONFIG";
 import { initializeMap } from "$parent/siblings/getCache_OnlineMap/lib/mapInit";
 import { NiceScaleBarControl } from "$parent/siblings/getCache_OnlineMap/lib/mapScaleBar";
+import { parseMapHash } from "$parent/siblings/getCache_OnlineMap/lib/mapUtilsHash";
 import MapDrawControls from "./MapDrawControls.svelte";
 import MapLegend from "$parent/siblings/getCache_OfflineMap/lib/mapUi/MapLegend.svelte";
 import MapTopControls from "$parent/siblings/getCache_OfflineMap/lib/mapUi/MapTopControls.svelte";
@@ -27,6 +28,12 @@ import {
     OFFLINE_MAP_ROUTE,
     saveLastMapRoute,
 } from "$parent/siblings/getCache_OfflineMap/lib/mapState/lastMapRoute.svelte";
+import {
+    HOSPITAL_LAYER_ID_LIST,
+    type HospitalLayerHandle,
+    attachHospitalLayer,
+} from "$parent/siblings/getCache_OfflineMap/routes/hospitals/hospitalLayer";
+import type maplibregl from "maplibre-gl";
 // TYPE-ONLY import: erased at build time, so it does NOT pull the 1,397-line
 // fireLayer module (and its whole dependency graph) into this route's bundle.
 // The implementation is loaded lazily below, and ONLY when fires are enabled —
@@ -60,7 +67,7 @@ function toggleHospitals(): void {
     hospitalsOn = !hospitalsOn;
     if (!mapInstance) return;
     const vis = hospitalsOn ? "visible" : "none";
-    for (const id of ["hospitals-osm-cluster", "hospitals-osm-icon"]) {
+    for (const id of HOSPITAL_LAYER_ID_LIST) {
         if (mapInstance.getLayer(id))
             mapInstance.setLayoutProperty(id, "visibility", vis);
     }
@@ -93,50 +100,28 @@ const configLayers = $derived([
 const DEFAULT_ZOOM = 3.5;
 
 // Module-scope store instance — the established pattern on this route
-// (fireLayer.ts:184, MapDrawControls.svelte:294). Read-only here: used solely
-// to resolve the hospital anchor.
+// (fireLayer.ts:184, MapDrawControls.svelte:294). Read-only here: the
+// hospital wall is measured from the anchors in it.
 const mapStore = createMapStore();
 
+/** The same view on the offline map, in the ?at&z shape it reads. */
+function offlineHref(): string {
+    const m = mapInstance;
+    if (!m) return OFFLINE_MAP_ROUTE;
+    const c = m.getCenter();
+    return `${OFFLINE_MAP_ROUTE}?at=${c.lat.toFixed(6)},${c.lng.toFixed(6)}&z=${m.getZoom().toFixed(2)}`;
+}
+
 /**
- * The point hospitals are filtered around — nearest anchor to the map home.
- *
- * `fireOrigins` returns every anchor worth caring about (live fix first, then
- * recently-touched features, falling back to the map centre). Hospitals are a
- * simpler question than fires: one hard radius around the worker, no wind, no
- * size, no direction. So we take the FIRST anchor — the strongest one — and
- * measure 200 km from it.
- *
- * Passed as a FUNCTION, not a value.
- *
- * ⚠️ It used to be called once at map construction — and that was a bug that
- * made hospitals vanish entirely. `mapStore.allMaps` hydrates ASYNCHRONOUSLY
- * from IndexedDB, so at construction time it is normally still empty;
- * `fireOrigins` then fell through to its last-resort `MAP_HOME_CENTER`, and we
- * filtered to 200 km around the HOME fallback rather than around the user.
- * Anywhere else in the world, that yields zero hospitals and a silently empty
- * layer.
- *
- * Handing over a getter lets `fetchHospitals` resolve the anchor at the moment
- * it actually fetches (on map `load`), by which time the store has hydrated.
- * Still evaluated ONCE per map, not per camera move: a hospital 200 km away
- * does not stop being a hospital because the user panned, and re-filtering on
- * movement would reintroduce the per-move allocation this change deletes.
+ * Where the hospital wall is measured from — the fire layer's anchor ladder
+ * (live GPS fix → features touched in 30 days → map centre as the last
+ * resort), read at paint time so the store has hydrated. Unhitched (a
+ * checkout with no ReTreever) has no store to anchor from, so no layer.
  */
-function hospitalAnchorNow(): [number, number] | null {
-	// THE DATA PILL. Unhitched = the honest state a checkout with no
-	// ReTreever gives: no mapStore to anchor from, so no hospital layer.
-	// Narrower than offline's flip — see onlineMapHitchState.svelte.ts for
-	// why MapDrawControls' pins/drawn features aren't gated here too.
-	if (!onlineMapHitchState.hitched) return null;
-	try {
-		const anchors = fireOrigins(MAP_HOME_CENTER, mapStore.allMaps);
-		const a = anchors[0];
-		return a ? [a[0], a[1]] : null;
-	} catch {
-		// A missing anchor must never block the map from loading. No anchor
-		// simply means no hospital layer — see fetchHospitals.
-		return null;
-	}
+function hospitalOrigins(map: mapboxgl.Map): readonly (readonly [number, number])[] {
+	if (!onlineMapHitchState.hitched) return [];
+	const c = map.getCenter();
+	return fireOrigins([c.lng, c.lat], mapStore.allMaps);
 }
 
 let mapContainer: HTMLDivElement | undefined = $state();
@@ -207,6 +192,7 @@ $effect(() => {
 // Component-scoped (not onMount-local) so the legend-toggle effect below can
 // reach it to repaint. $state so that effect re-runs once the layer attaches.
 let detachFire: FireLayerHandle | undefined = $state();
+let detachHospitals: HospitalLayerHandle | undefined;
 
 onMount(() => {
     // STICKY MAP: record that ONLINE is the map in use, so the bottom bar's MAP
@@ -225,6 +211,16 @@ onMount(() => {
     // Resume the last viewport (set on a prior mount / before the crow
     // toggle) so switching baselayers or returning to the page stays put.
     const savedCam = loadCamera();
+    // ?at=lat,lng&z= is the offline pages' URL shape; honour it here too so a
+    // link hops between the maps on the same spot. A hash still wins over it
+    // (mapInit applies the hash after these initials).
+    const atParam = new URLSearchParams(window.location.search);
+    const [atLat, atLng] = (atParam.get("at") ?? "").split(",").map(Number);
+    const atZoom = Number(atParam.get("z"));
+    const atCam =
+        Number.isFinite(atLat) && Number.isFinite(atLng)
+            ? { center: [atLng, atLat] as [number, number], zoom: Number.isFinite(atZoom) && atZoom > 0 ? atZoom : DEFAULT_ZOOM }
+            : null;
     try {
         cleanup = initializeMap(mapContainer, {
             showNavigation: true,
@@ -235,37 +231,30 @@ onMount(() => {
             loadMarkers: false,
             autoRotate: false,
             globeProjection: false,
-            // Camera in the URL (#zoom/lat/lng) so a tier switch — a
-            // different ORIGIN, so loadCamera()'s storage doesn't carry over —
-            // lands on the same spot. A hash present at boot beats savedCam
-            // (mapInit applies it after these initials).
+            // Camera in the URL so a tier switch — a different ORIGIN, so
+            // loadCamera()'s storage doesn't carry over — lands on the same
+            // spot. A #zoom/lat/lng hash present at boot beats savedCam
+            // (mapInit applies it after these initials), so old share links
+            // still land.
             enableHash: true,
-            writeHash: (url: string) => replaceState(url, {}),
+            // Written as ?at&z ONLY — the offline pages' shape — so the URL
+            // carries the camera once. mapInit hands us the hash form; it is
+            // converted, never kept, and any hash we arrived with is dropped.
+            writeHash: (url: string) => {
+                const cam = parseMapHash(url);
+                if (!cam) return;
+                const u = new URL(window.location.href);
+                u.hash = "";
+                u.searchParams.set("at", `${cam.center[1].toFixed(6)},${cam.center[0].toFixed(6)}`);
+                u.searchParams.set("z", cam.zoom.toFixed(2));
+                if (u.href === window.location.href) return;
+                replaceState(u, {});
+            },
             scrollZoom: true,
-            initialCenter: savedCam?.center ?? MAP_HOME_CENTER,
-            initialZoom: savedCam?.zoom ?? DEFAULT_ZOOM,
+            initialCenter: atCam?.center ?? savedCam?.center ?? MAP_HOME_CENTER,
+            initialZoom: atCam?.zoom ?? savedCam?.zoom ?? DEFAULT_ZOOM,
             hideLabels: true,
             labelWhitelist: ["road-", "settlement-"],
-            showHospitalMarkers: true,
-            // WHERE "nearby" IS MEASURED FROM. Only hospitals within 200 km of
-            // this point are loaded — the rest of the 3,005-strong national set
-            // is dropped before Mapbox ever sees it.
-            //
-            // Reuses the fire layer's anchor ladder rather than inventing a
-            // second one: live GPS fix → most-recently-touched feature → map
-            // centre. Same question ("where is this worker?"), so it must have
-            // the same answer, and that one is already test-locked
-            // (fireOrigins.test.ts).
-            // The FUNCTION, not its result — resolved at fetch time, after the
-            // map store has hydrated. See hospitalAnchorNow's note.
-            hospitalAnchor: hospitalAnchorNow,
-            // The hospital popup's "Your GPS loc." button. It runs the SAME
-            // action as the LOCATE tile — gate → pan to the blue dot → show
-            // the coordinate pill. Deliberately an arrow, not a direct
-            // reference: initializeMap runs before <MapDrawControls> binds, so
-            // the ref must be read at CLICK time, not now (it would be
-            // undefined and the button would silently do nothing).
-            onShowMyLocation: () => void drawControlsRef?.requestMyLocation(),
             style: MAP_CONFIG.styles.defaultSat,
             onMapCreated: (map) => {
                 // Pre-style handle for the blue dot only (see locMapInstance).
@@ -289,31 +278,23 @@ onMount(() => {
                 // hazard layer you have to remember to switch back on is one you
                 // find the day after you needed it.
                 // ═══════════════════════════════════════════════════════════
-                // 🔬 TEMPORARY BISECT — 2026-08-10. NOT A FIX. DELETE THIS.
-                // One of TWO remaining fire switches, paired with
-                // FIRE_REFRESH_ENABLED (getCache_OfflineMap/lib/onPhone/bake/
-                // bakeService.svelte.ts). Both must be off together: the app is
-                // ONE process, so a fire layer live on /map keeps the whole
-                // fire module — its memos, its IndexedDB reads, its repaint
-                // timers — resident and working no matter which route is
-                // showing. Half a bisect proves nothing.
-                // NOTE 2026-08-23: a third switch, FIRE_LAYER_ENABLED, used to
-                // live in the offline page and NO LONGER EXISTS. If you are
-                // restoring fires, confirm the offline route needs no switch of
-                // its own rather than assuming this pair covers it.
-                // TO RESTORE: set FIRE_LAYER_ENABLED_ONLINE back to true.
-                // ═══════════════════════════════════════════════════════════
-                const FIRE_LAYER_ENABLED_ONLINE = false; // 🔬 bisect
-                if (FIRE_LAYER_ENABLED_ONLINE) {
-                    // Dynamic import: while the flag is false this module is
-                    // never fetched, parsed or evaluated at all. With the old
-                    // static import it was resident on every load of this route
-                    // regardless of the flag — the bisect was disabling the
-                    // layer's BEHAVIOUR while still paying for its CODE.
-                    void import("./fireLayer").then((m) => {
-                        detachFire = m.attachFireLayer(map);
-                    });
-                }
+                // Dynamic import: the 1,397-line fire module is fetched only
+                // once the map is live, not on every load of the route.
+                void import("./fireLayer").then((m) => {
+                    detachFire = m.attachFireLayer(map);
+                });
+                // HOSPITALS — the same layer and card the offline map mounts,
+                // the wall measured from the same anchors as the fires.
+                detachHospitals = attachHospitalLayer(
+                    map as unknown as maplibregl.Map,
+                    {
+                        origins: () => hospitalOrigins(map),
+                        // The card's "My location" runs the LOCATE tile's action.
+                        // Read at click time: initializeMap runs before
+                        // <MapDrawControls> binds the ref.
+                        onShowMyLocation: () => void drawControlsRef?.requestMyLocation(),
+                    },
+                );
                 map.addControl(
                     new NiceScaleBarControl({
                         width: 200,
@@ -359,6 +340,8 @@ onMount(() => {
         detachDblTap?.();
         detachCamera?.();
         detachFire?.();
+        detachHospitals?.();
+        detachHospitals = undefined;
         // Drop the handle too — it now outlives onMount, and a repaint through a
         // disposed layer would touch a removed map.
         detachFire = undefined;
@@ -407,7 +390,7 @@ $effect(() => {
     ports={mapPorts}
         bind:mapOnly
         crowMode="online"
-        onCrowToggle={() => goto(OFFLINE_MAP_ROUTE)}
+        onCrowToggle={() => goto(offlineHref())}
     />
 
     <MapDrawControls
