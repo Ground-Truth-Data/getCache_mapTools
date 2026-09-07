@@ -1006,8 +1006,8 @@ async function runLocate() {
 // ── THE "WHERE AM I" ACTION ────────────────────────────────────────────────
 // Pan to the blue dot, then float the coordinate above it in a pill you can
 // READ with your eyes and SHARE five ways. This is the ONE action behind both
-// doors: the LOCATE tile (above) and the hospital popup's "Your GPS loc."
-// button (handed into the harness as `onShowMyLocation` — see mapInit.ts).
+// doors: the LOCATE tile (above) and the hospital card's "My location"
+// button (handed to attachHospitalLayer as `onShowMyLocation`).
 //
 // Why it lives here and not in the popup: the fix is ALREADY in memory
 // (userLocator.getUserCoord(), fed by the always-on watch). The hospital popup
