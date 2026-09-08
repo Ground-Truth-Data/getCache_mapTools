@@ -50,10 +50,12 @@ const raw = readFileSync(
  * it forever. We care what the layer ASKS FOR, not what the prose mentions.
  */
 const src = raw.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-const mapInitSrc = readFileSync(
+// The symbol layers moved to mapDraw.ts; mapInit.ts has no text layer left to
+// pick a font for, so asserting on it only proved the file was still readable.
+const mapDrawSrc = readFileSync(
 	fileURLToPath(
 		new URL(
-			"../getCache_OnlineMap/lib/mapInit.ts",
+			"../getCache_OnlineMap/lib/mapDraw.ts",
 			import.meta.url,
 		),
 	),
@@ -81,9 +83,9 @@ describe("fireLayer — glyph fontstack (the invisible-layer bug)", () => {
 		// hardcoded stack 404s forever on whichever map it wasn't written for —
 		// once per tile. Both directions were seen live (DIN 404ing on
 		// /mobile/offlinev4, Noto 404ing on /mobile/map). The font must be chosen
-		// at runtime; see harness/.../getCache_OnlineMap/lib/glyphStack.ts.
-		expect(mapInitSrc).toContain("glyphStack(map)");
-		expect(mapInitSrc).not.toContain('"DIN Pro Medium"');
+		// at runtime; see getCache_OnlineMap/lib/glyphStack.ts.
+		expect(mapDrawSrc).toContain("glyphStack(map)");
+		expect(mapDrawSrc).not.toContain('"DIN Pro Medium"');
 	});
 
 	it("shows no count on the marker", () => {

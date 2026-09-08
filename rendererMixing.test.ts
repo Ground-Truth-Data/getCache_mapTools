@@ -45,24 +45,26 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const REPO = join(HERE, "..", "..", "..", "..");
+// The map stack lives in THIS folder, so paths are relative to HERE. The old
+// four-level climb dated from when this file sat nested inside ReTreever; every
+// readFileSync resolved outside the repo and threw ENOENT, invisible because
+// the file matched no vitest include glob until 8 Sep 2026.
+const MAPTOOLS = HERE;
+const FETCH = join(HERE, "..");
 
 /**
  * Directories holding map code reached by BOTH routes.
  *
- * `src/routes/(getcache)/map/` is shared wholesale: /offline imports
- * MapDrawControls from it, which pulls in PlotLayer, FeatureLayer and the rest.
+ * ⚠️ All four earlier entries pointed into ReTreever (`src/routes/(getcache)/map`,
+ * two `src/lib/mobile` folders) and into `harness/`, deleted 26 Aug 2026. The
+ * map stack moved HERE — getCache_mapTools is the shared tree both routes reach
+ * — so every directory this guard swept had ceased to exist and it was scanning
+ * nothing while reporting green. The empty-sweep test below is what catches
+ * that; keep it.
  */
 const SHARED_DIRS = [
-	join(REPO, "src", "routes", "(getcache)", "map"),
-	join(REPO, "src", "lib", "mobile", "components", "mobMap"),
-	join(REPO, "src", "lib", "mobile", "map"),
-	// the harness's map shells are shared by BOTH routes too. Leaving this out is
-	// how the hospital popup in mapInit.ts kept its hardcoded
-	// `new mapboxgl.Popup(...)` — the actual source of the
-	// `_requestDomTask` error seen on /offline. A guard that only watches
-	// ReTreever's half of a two-repo component tree is a guard with a hole.
-	join(REPO, "harness", "src", "lib", "components", "map"),
+	MAPTOOLS,
+	join(FETCH, "getCache_OnlineMap", "lib"),
 ];
 
 /**
@@ -103,7 +105,7 @@ function sharedMapFiles(): Array<{ rel: string; src: string }> {
 	const files: Array<{ rel: string; src: string }> = [];
 	for (const dir of SHARED_DIRS) {
 		for (const full of walk(dir)) {
-			const rel = relative(REPO, full).split("\\").join("/");
+			const rel = relative(FETCH, full).split("\\").join("/");
 			if (EXEMPT.has(rel)) continue;
 			files.push({ rel, src: readFileSync(full, "utf8") });
 		}
@@ -199,7 +201,7 @@ describe("renderer mixing — shared map code must not hardcode a GL library", (
 		const files = sharedMapFiles();
 		expect(files.length).toBeGreaterThan(10);
 		expect(files.map((f) => f.rel)).toContain(
-			"src/routes/(getcache)/map/PlotLayer.svelte",
+			"getCache_mapTools/PlotLayer.svelte",
 		);
 	});
 
@@ -254,7 +256,7 @@ describe("renderer mixing — shared map code must not hardcode a GL library", (
 		// with a hardcoded `import("mapbox-gl")`, so every plot drop on /offline
 		// threw mid-effect and left the plaque floating unattached.
 		const src = readFileSync(
-			join(REPO, "src", "routes", "(getcache)", "map", "PlotLayer.svelte"),
+			join(MAPTOOLS, "PlotLayer.svelte"),
 			"utf8",
 		);
 		expect(src).toContain("markerCtor");
@@ -266,7 +268,7 @@ describe("renderer mixing — shared map code must not hardcode a GL library", (
 		// path. It used to hardcode mapbox-gl — a crash waiting for fires to be
 		// re-enabled on /offline.
 		const raw = readFileSync(
-			join(REPO, "src", "routes", "(getcache)", "map", "fireLayer.ts"),
+			join(MAPTOOLS, "fireLayer.ts"),
 			"utf8",
 		);
 		const code = codeOnly(raw);
@@ -283,7 +285,7 @@ describe("renderer mixing — shared map code must not hardcode a GL library", (
 		// An exemption that stops being true is worse than no exemption. This
 		// pins the reason the file is on the list.
 		const src = readFileSync(
-			join(REPO, "src", "routes", "(getcache)", "map", "userLocation.svelte.ts"),
+			join(MAPTOOLS, "userLocation.svelte.ts"),
 			"utf8",
 		);
 		expect(src).toContain("maplibregl");

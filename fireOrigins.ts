@@ -35,20 +35,26 @@ import {
 } from "$parent/siblings/getCache_OfflineMap/routes/fires/fireRelevance";
 
 /**
- * How far back a touched feature still counts as ground you have a stake in.
+ * How far back the last-touched feature still counts as ground you have a stake in.
  *
- * Thirty days. Generous on purpose: a block you set up last week is exactly the
- * thing you want fire news about, and the recency SORT plus the anchor cap
- * already keep the set small. This window's only job is to stop a feature you
- * abandoned last season from permanently holding one of three anchor slots.
+ * Thirty days. It bounds ONE anchor, not a set: past this, someone who has not
+ * opened the app in a season falls back to their live fix alone rather than
+ * carrying last year's block around forever.
  */
 export const ANCHOR_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 /**
- * Candidate anchors, newest-touched first, before the cap and merge.
+ * THE last-touched feature, as a one-element list — or empty if there is none.
  *
- * Split out from `fireOrigins` so a test can inspect the raw candidate list
- * without a live store.
+ * ⛔ ONE, not a set. "Last touched" is the LAST thing touched: the single
+ * newest pin, line, polygon or plot. It was once read as a category — every
+ * feature inside the 30-day window, three surviving the cap — and that is the
+ * Winnemucca bug: 48 blobs across seven states meant a pin in Utah touched two
+ * days ago was a live anchor, so a fire 1,300 km from the user drew legally.
+ * See the test of the same name.
+ *
+ * Returns a list because `anchorOrigins` concatenates it with the live fix and
+ * `fireAnchors` takes a list; the length is never more than 1.
  */
 export function anchorCandidates(
 	maps: ReadonlyArray<{
@@ -60,21 +66,23 @@ export function anchorCandidates(
 	}>,
 	now: number,
 ): FireAnchorInput[] {
-	const out: FireAnchorInput[] = [];
+	// The single newest across EVERY map — you can be working a block whose map
+	// is not the one on screen, and it is still the last ground you touched.
+	let best: FireAnchorInput | null = null;
 	for (const m of maps) {
 		for (const f of m.features) {
 			if (!isBlobAnchor(f)) continue;
 			const touchedAt = Date.parse(f.lastTouched);
 			if (!Number.isFinite(touchedAt)) continue;
 			if (now - touchedAt > ANCHOR_MAX_AGE_MS) continue;
+			if (best !== null && touchedAt <= best.touchedAt) continue;
 			// A line samples to many anchors and a PDF to four corners; for the fire
-			// wall they are ONE place, and the 200 km merge would collapse them
-			// anyway. Taking the first keeps the candidate list small.
+			// wall they are ONE place.
 			const [at] = anchorsOf(f);
-			if (at) out.push({ at, touchedAt });
+			if (at) best = { at, touchedAt };
 		}
 	}
-	return out;
+	return best === null ? [] : [best];
 }
 
 /** The shape `fireOrigins` needs from a map — structural, so a test can supply

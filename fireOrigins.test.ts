@@ -133,14 +133,17 @@ describe("anchorCandidates — features become stakes", () => {
 		expect(anchorCandidates(maps, NOW)).toHaveLength(1);
 	});
 
-	it("collects across every map, not just the active one", () => {
+	it("searches every map, not just the active one", () => {
 		// You can be working a block whose map isn't the one on screen. The fires
-		// there are still your business.
+		// there are still your business — so the newest is found across all maps,
+		// not per map. (One winner: see "the LAST touched thing" below.)
 		const maps = [
 			{ features: [point(-123.1, 49.28, "2026-08-08T15:00:00.000Z")] },
 			{ features: [point(-99.6, 52.4, "2026-08-08T15:58:00.000Z")] },
 		];
-		expect(anchorCandidates(maps, NOW)).toHaveLength(2);
+		const got = anchorCandidates(maps, NOW);
+		expect(got).toHaveLength(1);
+		expect(got[0].at[0]).toBeCloseTo(-99.6, 1);
 	});
 });
 
