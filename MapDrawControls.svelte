@@ -1336,6 +1336,14 @@ $effect(() => {
 	/>
 {/if}
 
+<!-- Preferred height is DERIVED, not a constant: the tiles are
+     aspect-ratio 1/1, so all three rows grow with the phone's WIDTH.
+     100cqw is .mobile-shell's inline size (the phone frame on desktop,
+     the viewport on device); the three square rows plus their gaps come
+     to 100cqw - 28px, and 122px is everything else (body padding,
+     dividers, flex gaps, the 64px pullbar). A flat 490px cap here
+     clipped the SEARCH / NEW MAP / LEGEND labels on every phone wider
+     than ~390px. -->
 <MobDrawer
     bind:this={mobDrawerRef}
     bind:open={drawerOpen}
@@ -1343,7 +1351,7 @@ $effect(() => {
     showScrim
     closedHint={editActive ? undefined : "PULL FOR MODULES"}
     ariaLabel="Drag to show modules"
-    height="clamp(calc((100% - 5rem - 3.5rem - env(safe-area-inset-bottom)) * 0.55 + 30px), 490px, calc((100% - 5rem - 3.5rem - env(safe-area-inset-bottom)) * 0.7 + 30px))"
+    height="clamp(calc((100% - 5rem - 3.5rem - env(safe-area-inset-bottom)) * 0.55 + 30px), calc(100cqw + 94px), calc((100% - 5rem - 3.5rem - env(safe-area-inset-bottom)) * 0.86 + 30px))"
     bodyClass=""
     onClose={handleDrawerClose}
 >

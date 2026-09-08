@@ -40,6 +40,8 @@ interface WaitingRef {
         ],
     ): void;
     hideWaiting(): void;
+    /** Backstop for the render-owned teardown: hides the box only if it is still up. */
+    hideWaitingSoon?(): void;
 }
 
 export interface MapImporterDeps {
@@ -248,7 +250,11 @@ export function createMapImporter(deps: MapImporterDeps): MapImporter {
             // Hide the waiting box unless a PDF overlay actually landed — in
             // that case the overlay render owns the (gap-free) teardown. On any
             // failure / non-PDF outcome, clear it here so it never strands.
+            // The handoff is not a guarantee: the render can bail before it
+            // reaches its teardown (invalid corners, a throwing mount), so a
+            // late backstop clears a box the renderer never claimed.
             if (waitingShown && !pdfOverlayLanded) deps.waiting?.hideWaiting();
+            else if (waitingShown) deps.waiting?.hideWaitingSoon?.();
         }
     }
 
