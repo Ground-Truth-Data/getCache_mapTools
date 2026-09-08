@@ -204,3 +204,63 @@ describe("fireFollowsCamera — when a pan can change nothing", () => {
 		expect(fireFollowsCamera([], NOW)).toBe(true);
 	});
 });
+
+/**
+ * ⛔ THE WINNEMUCCA FLAME (Chris, 8 Sep 2026 — the JSON, 48 blobs).
+ *
+ * A single flame drew at 40.852,-111.457 in Utah while he stood in Vancouver:
+ * 1,304 km away, well past the wall, with nothing else on screen for hundreds
+ * of km. It looked like a leak past HARD_CUTOFF_KM. It was not — every layer of
+ * the wall did exactly what it promised.
+ *
+ * The rule was too WIDE. "Last touched" means the LAST thing touched — one
+ * pin, the newest — and it had been read as a category: any feature touched
+ * inside a 30-day window, three of them at once. His 48 blobs spanned
+ * Louisiana, BC, Washington, Oregon, Idaho, Utah and Nevada, nearly all
+ * stamped within two days, so West Point UT (77 km from that flame, touched
+ * 1.8 days earlier) was a fully-qualified anchor and admitted it legally.
+ *
+ * Two anchors, never more: where you ARE, and the ONE place you touched last.
+ */
+describe("⛔ anchorCandidates — the LAST touched thing, not every recent one", () => {
+	// Straight from the session JSON.
+	const CROWLEY = [-92.36235, 30.26388] as const; // newest pin, 16:35 today
+	const WEST_POINT = [-112.32012, 41.08611] as const; // 1.8 days earlier, Utah
+
+	it("keeps ONLY the newest-touched feature, however fresh the others are", () => {
+		const maps = [
+			{
+				features: [
+					point(WEST_POINT[0], WEST_POINT[1], "2026-08-06T20:00:00.000Z"),
+					point(CROWLEY[0], CROWLEY[1], "2026-08-08T15:59:00.000Z"),
+				],
+			},
+		];
+		const got = anchorCandidates(maps, NOW);
+		expect(got).toHaveLength(1);
+		expect(got[0].at[0]).toBeCloseTo(CROWLEY[0], 3);
+		expect(got[0].at[1]).toBeCloseTo(CROWLEY[1], 3);
+	});
+
+	it("picks the newest ACROSS maps, not one per map", () => {
+		const maps = [
+			{ features: [point(WEST_POINT[0], WEST_POINT[1], "2026-08-06T20:00:00.000Z")] },
+			{ features: [point(CROWLEY[0], CROWLEY[1], "2026-08-08T15:59:00.000Z")] },
+		];
+		expect(anchorCandidates(maps, NOW)).toHaveLength(1);
+	});
+
+	it("48 blobs across a continent still yield exactly one candidate", () => {
+		const spread = [
+			[-92.36235, 30.26388, "2026-08-08T15:59:00.000Z"], // Crowley LA — newest
+			[-112.32012, 41.08611, "2026-08-06T20:00:00.000Z"], // West Point UT
+			[-114.9506, 41.10202, "2026-08-07T09:00:00.000Z"], // Wells NV
+			[-116.65921, 43.48989, "2026-08-06T18:00:00.000Z"], // Nampa ID
+			[-122.96789, 49.92244, "2026-08-08T15:00:00.000Z"], // Whistler BC
+		] as const;
+		const maps = [
+			{ features: spread.map(([lng, lat, t]) => point(lng, lat, t)) },
+		];
+		expect(anchorCandidates(maps, NOW)).toHaveLength(1);
+	});
+});
