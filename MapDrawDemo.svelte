@@ -1,9 +1,6 @@
 <script lang="ts">
-// Cursor art comes from `$parent/retreeved/sharedAssets` — retreeved/ is the SINGLE
-// SOURCE OF TRUTH for shared art. It used to be the static URL
-// `/mobileAssets/...`, which only resolves on this server, so a child or
-// any other tier reusing the same hand had to keep its own second copy.
-// Importing binds the bytes to the build instead of to one host's URL.
+// Imported, not a `/mobileAssets/...` URL: a static URL resolves only on the
+// server that holds the file, so every other tier needed its own copy.
 import handShovelCursor100 from "$gc/assets/hand_shovel_cursor_100.webp";
 
 // Guided draw-tour hand cursor for the map page. Presentational + imperative:
