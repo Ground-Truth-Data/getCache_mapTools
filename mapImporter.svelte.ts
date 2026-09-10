@@ -88,7 +88,7 @@ function isPdfFile(file: File): boolean {
 async function pdfCornersOnDevice(file: File): Promise<CornerQuad | null> {
     try {
         const { extractGeoPdfBounds } = await import(
-            "$parent/siblings/getCache_OnlineMap/lib/geoPdf/geoPdfBounds"
+            "$parent/siblings/getCache_OnlineMap/lib/pdf/render/geoPdfBounds"
         );
         const bytes = new Uint8Array(await file.arrayBuffer());
         const b = await extractGeoPdfBounds(bytes);
