@@ -105,17 +105,41 @@ export function createMapDemoScheduler(deps: MapDemoDeps): MapDemoScheduler {
 
     const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
-    // Frame-local origin: position:fixed resolves to .mobile-preview-frame on
-    // dt-web (it has `contain: layout`) and to the viewport on device. Subtract
-    // the frame rect so getBoundingClientRect()-derived targets line up with the
-    // fixed-positioned hand.
-    function demoFrameOrigin(): { left: number; top: number } {
-        const frame =
-            (document
-                .querySelector(".mobile-map-fill")
-                ?.closest(".mobile-preview-frame") as HTMLElement | null) ?? null;
-        const r = frame?.getBoundingClientRect();
-        return { left: r?.left ?? 0, top: r?.top ?? 0 };
+    // Frame-local conversion: the hand is position:fixed, so its coords are the
+    // containing block's own CSS px — and on dt-web that block is SCALED, so a
+    // raw getBoundingClientRect (screen px) is the wrong space. Divide by k on
+    // the way in, and add CSS-px nudges only AFTER the divide, or they stretch
+    // and shrink with the window. The block is FOUND, not named: `.mobile-shell`
+    // sits inside the frame and carries `container-type`, so it wins.
+    //
+    // Self-contained by necessity — this repo may not import ReTreever's $lib,
+    // so it cannot share `localFrom`. Keep the maths identical to it.
+    function demoFrame(): { left: number; top: number; k: number } {
+        const start =
+            (document.querySelector(".mobile-map-fill") as HTMLElement | null) ??
+            null;
+        let block: HTMLElement | null = null;
+        for (let p = start?.parentElement ?? null; p; p = p.parentElement) {
+            const cs = getComputedStyle(p);
+            if (
+                (cs.transform && cs.transform !== "none") ||
+                (cs.filter && cs.filter !== "none") ||
+                (cs.backdropFilter && cs.backdropFilter !== "none") ||
+                (cs.perspective && cs.perspective !== "none") ||
+                (cs.willChange && /transform|filter|perspective/.test(cs.willChange)) ||
+                (cs.contain && /paint|layout|strict|content/.test(cs.contain)) ||
+                (cs.containerType && cs.containerType !== "normal")
+            ) {
+                block = p;
+                break;
+            }
+        }
+        if (!block) return { left: 0, top: 0, k: 1 };
+        const r = block.getBoundingClientRect();
+        // offsetWidth is pre-transform layout px; the rect is post-transform
+        // screen px. Their ratio IS the live scale, whatever --fit resolves to.
+        const k = block.offsetWidth > 0 ? r.width / block.offsetWidth : 1;
+        return { left: r.left, top: r.top, k };
     }
 
     // Frame-local anchor of a DOM element. `at: "top"` returns the top-center
@@ -127,10 +151,10 @@ export function createMapDemoScheduler(deps: MapDemoDeps): MapDemoScheduler {
         const el = document.querySelector(selector) as HTMLElement | null;
         if (!el) return null;
         const r = el.getBoundingClientRect();
-        const o = demoFrameOrigin();
+        const o = demoFrame();
         return {
-            x: r.left - o.left + r.width / 2,
-            y: r.top - o.top + (at === "top" ? 6 : r.height / 2),
+            x: (r.left - o.left) / o.k + r.width / o.k / 2,
+            y: (r.top - o.top) / o.k + (at === "top" ? 6 : r.height / o.k / 2),
         };
     }
 
@@ -245,11 +269,12 @@ export function createMapDemoScheduler(deps: MapDemoDeps): MapDemoScheduler {
             const stripEl = document.querySelector(".draw-strip") as HTMLElement | null;
             let exitY = draw.y + 80;
             if (stripEl) {
-                const o = demoFrameOrigin();
+                const o = demoFrame();
                 const r = stripEl.getBoundingClientRect();
-                const top = r.top - o.top + 26; // glide just below the palette's top edge (+20px lower)
-                const left = r.left - o.left + 8;
-                const right = r.left - o.left + r.width - 8;
+                // Nudges are CSS px, so they go on AFTER the divide.
+                const top = (r.top - o.top) / o.k + 26; // just below the palette's top edge
+                const left = (r.left - o.left) / o.k + 8;
+                const right = (r.left - o.left + r.width) / o.k - 8;
                 exitY = top + 70;
                 // approach the right end, then a single slow hover sweep to the left
                 await hand?.moveTo(right, top, { curve: 70, rot: -10, duration: 0.9 });
