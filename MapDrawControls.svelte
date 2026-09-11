@@ -1647,12 +1647,13 @@ $effect(() => {
         z-index: 17;
         pointer-events: none;
     }
-    /* Two-row bottom chrome: title+zoom (top row) sit 30px above the Mapbox
-       logo+scale-bar row. bottom values mirror .nice-scale-bar in MobMapPage.svelte.
+    /* Three-row bottom chrome, top to bottom: scale bar, these pills, Mapbox
+       logo. Keep in sync with .nice-scale-bar in gc/mobile.css — the bar's
+       offset is this one plus its own height.
        z-index: 16 keeps these below the drawer (z-index: 22) — no JS gating needed. */
     .map-title-pos {
         position: absolute;
-        bottom: calc(env(safe-area-inset-bottom) + 1.25rem + 56px + 15px + 30px);
+        bottom: calc(env(safe-area-inset-bottom) + 1.25rem + 56px + 15px + 28px);
         left: 0.75rem;
         z-index: 16;
         pointer-events: none;
@@ -1662,7 +1663,7 @@ $effect(() => {
     .map-title-pos--visible { opacity: 1; }
     .map-zoom-pos {
         position: absolute;
-        bottom: calc(env(safe-area-inset-bottom) + 1.25rem + 56px + 15px + 30px);
+        bottom: calc(env(safe-area-inset-bottom) + 1.25rem + 56px + 15px + 28px);
         right: 0.75rem;
         z-index: 16;
         background: transparent;
