@@ -80,6 +80,11 @@ const EXEMPT = new Set([
 	// Sniffs the instance inline and picks the library itself (predates
 	// rendererOf; equivalent behaviour, verified by the assertion below).
 	"src/routes/(getcache)/map/userLocation.svelte.ts",
+	// The PDF georeferencer is Mapbox-only: it is mounted by /app/georef
+	// alone and never by the MapLibre route, so it has no renderer to mix.
+	// It sits under the swept getCache_OnlineMap/lib tree, not because it is
+	// shared, but because that is where the georeferencer lives.
+	"getCache_OnlineMap/lib/pdf/georef/MapPane.svelte",
 ]);
 
 function walk(dir: string): string[] {
