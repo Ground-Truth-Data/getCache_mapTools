@@ -28,7 +28,7 @@
     import {
         loadInboundPackages,
         loadUserProfile,
-        setInboundPackageReceivedAt,
+        setInboundPackageSortOrder,
         type InboundPackage as Package,
     } from "$mobRoutes/db/index";
 
@@ -75,7 +75,7 @@
     ) {
         void applyReorder(itemId, newIndex, siblings, {
             mapStore,
-            setPackageReceivedAt: setInboundPackageReceivedAt,
+            setPackageSortOrder: setInboundPackageSortOrder,
             refresh: async () => {
                 inbound = await loadInboundPackages();
             },
