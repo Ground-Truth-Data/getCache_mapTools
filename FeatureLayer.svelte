@@ -42,8 +42,8 @@ let {
 	// True iff the selected feature is a `plot:N` pin — the host derives this and
 	// passes it so FeatureLayer can EXCLUDE plot pins (they belong to PlotLayer).
 	selectedIsPlotPin,
-	// The current block number (for auto-name re-parsing on icon swap).
-	blockNumber,
+	// The current block name (for auto-name re-parsing on icon swap).
+	landName,
 	cachedDisplayName,
 	// Shared host wiring.
 	deselect,
@@ -54,7 +54,7 @@ let {
 	popoverPos: PopoverPositioning;
 	selectedFeature: Feature | null;
 	selectedIsPlotPin: boolean;
-	blockNumber: string | null;
+	landName: string | null;
 	cachedDisplayName: string | null;
 	deselect: () => void;
 	onShare: (format?: MapShareFormat) => void;
@@ -110,7 +110,7 @@ function changeFeatureIcon(key: string) {
 		/_plain_(red|orange|yellow|green|blue|purple)(?=_|$)/,
 		"_$1",
 	);
-	const blockSlug = (blockNumber ?? "")
+	const blockSlug = (landName ?? "")
 		.trim()
 		.replace(/[^a-zA-Z0-9_-]/g, "")
 		.toLowerCase();
@@ -174,7 +174,7 @@ function handleContacts(keys: string[]) {
 function handleBlock(block: string) {
 	const key = selectedKey();
 	if (!key) return;
-	mapStore.updateFeature(key, { blockNumber: block });
+	mapStore.updateFeature(key, { landName: block });
 }
 
 // Delete a regular feature (pin / line / polygon) from its popover's garbage can.

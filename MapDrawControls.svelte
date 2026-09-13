@@ -338,7 +338,7 @@ $effect(() => {
     if (autoCreateAttempted) return; // already kicked off a create; don't spin
     autoCreateAttempted = true;
     mapStore.ensureActiveMap(
-        defaultMapTitle(cachedDisplayName, cache.blockNumber),
+        defaultMapTitle(cachedDisplayName, cache.landName),
     );
 });
 
@@ -1498,7 +1498,7 @@ $effect(() => {
     {popoverPos}
     {selectedFeature}
     {selectedIsPlotPin}
-    blockNumber={cache.blockNumber}
+    landName={cache.landName}
     {cachedDisplayName}
     deselect={handleDeselect}
     onShare={handleShare}

@@ -88,20 +88,26 @@ export function createGridTile(deps: GridTileDeps): GridTile {
     // Restore persisted grid state. Async: the store is ready by the time
     // the user taps anything, so the brief initial "off" is invisible.
     if (typeof window !== "undefined") {
-        void loadAppState().then((state) => {
-            gridMode = state.gridMode as GridMode;
-            gridFine = state.gridFine;
-            if (gridMode !== "off") {
+        void loadAppState()
+            .then((state) => {
+                gridMode = state.gridMode as GridMode;
+                gridFine = state.gridFine;
+                if (gridMode === "off") return;
                 const map = getMap();
-                if (map) {
-                    // Lazy sources: this restore path can be the FIRST thing to
-                    // need them (persisted grid = on, map already live).
-                    setupGridSourcesAndLayers(map);
-                    setGridVisibility(map, true, gridMode);
-                    updateGrid(map, gridMode);
-                }
-            }
-        });
+                // isStyleLoaded, not just `map`: the await above means the style
+                // can be mid-load by the time we resume, and addSource throws
+                // "Style is not done loading". attachGridLifecycle's styledata
+                // handler re-adds them once it settles, so returning is safe.
+                if (!map?.isStyleLoaded()) return;
+                // Lazy sources: this restore path can be the FIRST thing to
+                // need them (persisted grid = on, map already live).
+                setupGridSourcesAndLayers(map);
+                setGridVisibility(map, true, gridMode);
+                updateGrid(map, gridMode);
+            })
+            .catch((err) => {
+                console.warn("[gridTile] restoring persisted grid failed", err);
+            });
     }
 
     function applyGridMode(next: GridMode) {
