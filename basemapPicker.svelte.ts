@@ -90,7 +90,18 @@ export function createBasemapPicker(deps: BasemapPickerDeps): BasemapPicker {
                 } catch {
                     // codestyle-allow-swallow: localStorage write for basemap preference can fail if storage is full; cosmetic preference only
                 }
-                map.setStyle(opt.url);
+                // diff:false — two basemaps never share a sprite, so the differ
+                // always bails at `setSprite` ("Unimplemented") and rebuilds
+                // from scratch regardless. Asking for the diff only buys a
+                // console warning per switch.
+                map.setStyle(opt.url, {
+                    diff: false,
+                    // Mapbox types both of these as REQUIRED on SetStyleOptions
+                    // though the implementation treats them as optional;
+                    // undefined is what omitting the options object passes.
+                    localFontFamily: undefined,
+                    localIdeographFontFamily: undefined,
+                });
             }
         }
         popoverOpen = false;
