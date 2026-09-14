@@ -170,7 +170,7 @@ function handleContacts(keys: string[]) {
 	mapStore.updateFeature(key, { contacts: keys });
 }
 
-// Tag a polygon with its block number from the popover's BLOCK picker.
+// Point a polygon at the block picked in the popover's BLOCK picker.
 function handleBlock(block: string) {
 	const key = selectedKey();
 	if (!key) return;

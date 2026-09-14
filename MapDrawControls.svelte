@@ -74,7 +74,7 @@ import { defaultMapTitle } from "$lib/mobile/utils/naming";
 import {
     type Lnglat,
     applyPolygonFillOpacity,
-    buildCentroidFC,
+    setCentroidSources,
     buildCompletedFC,
     buildDrawEdgesFC,
     clearInProgressSources,
@@ -825,7 +825,7 @@ $effect(() => {
         : feats.filter((f) => f.geometry?.type === "Point");
     setSource("completed-features", buildCompletedFC(visible));
     // Boundary pins mirror the same visible set — hiding shapes hides them.
-    setSource("completed-centroids", buildCentroidFC(visible));
+    setCentroidSources(setSource, visible);
     // Area chips/dots + track labels are DOM markers, reconciled from the
     // same visible set — hiding shapes removes them too. A tap on a chip or
     // dot toggles selection, same as tapping the polygon body.
