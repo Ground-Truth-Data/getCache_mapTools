@@ -149,6 +149,12 @@ function handleFillOpacity(v: number) {
 	mapStore.updateFeature(key, { fillOpacity: v });
 }
 
+function handleTitleShown(v: boolean) {
+	const key = selectedKey();
+	if (!key) return;
+	mapStore.updateFeature(key, { titleShown: v });
+}
+
 function handleEditSave(name: string, featureDesc: string, featureData: string) {
 	const key = selectedKey();
 	if (!key) return;
@@ -210,6 +216,7 @@ function cancelDeleteFeature() {
 			? changeFeatureIcon
 			: undefined}
 		onFillOpacity={handleFillOpacity}
+		onTitleShown={handleTitleShown}
 		onDelete={requestDeleteFeature}
 		onContacts={handleContacts}
 		onBlock={handleBlock}

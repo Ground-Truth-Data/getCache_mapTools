@@ -37,9 +37,17 @@ import { toast } from "svelte-sonner";
 import type { MapStore } from "$lib/mobile/stores/mapStore.svelte";
 import { getCurrentPositionOnce } from "./userLocation.svelte";
 
-const BackgroundGeolocation = registerPlugin<BackgroundGeolocationPlugin>(
-    "BackgroundGeolocation",
-);
+// Capacitor's registry warns "Cannot register plugins twice" on a second
+// registerPlugin for the same name, and HMR re-evaluates this module on every
+// edit. Stash the proxy on globalThis so the first evaluation wins and later
+// ones reuse it.
+const PLUGIN_KEY = Symbol.for("getcache.plugin.backgroundGeolocation");
+type WithPlugin = typeof globalThis & {
+    [PLUGIN_KEY]?: BackgroundGeolocationPlugin;
+};
+const BackgroundGeolocation: BackgroundGeolocationPlugin =
+    ((globalThis as WithPlugin)[PLUGIN_KEY] ??=
+        registerPlugin<BackgroundGeolocationPlugin>("BackgroundGeolocation"));
 
 /** Web sampler cadence. Sparse on purpose — one fix every 10s. */
 const SAMPLE_MS = 10_000;
