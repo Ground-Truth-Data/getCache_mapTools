@@ -42,7 +42,11 @@ export type MapEventsDeps = {
         restoreAfterStyleLoad: (m: MapboxMap) => void;
     };
     vertexDragger: { attach: () => () => void; lastUpAt: number };
-    pins: { sync: () => void; clear: () => void };
+    pins: {
+        sync: () => void;
+        clear: () => void;
+        relayoutFans: () => void;
+    };
     overlayMgr: {
         bustCache: () => void;
         renderActiveMapOverlay: () => Promise<void> | void;
@@ -142,6 +146,10 @@ export function createMapEvents(deps: MapEventsDeps) {
         const onMove = () => {
             const sel = deps.getSelectedFeature();
             if (sel) deps.popoverPos.compute(sel);
+            // `move` fires throughout a zoom gesture, not just a pan — which is
+            // what the pin fans need, their offsets being screen pixels that go
+            // stale the moment the scale changes.
+            if (deps.mapStore.ready) deps.pins.relayoutFans();
         };
 
         const onZoom = () => {
