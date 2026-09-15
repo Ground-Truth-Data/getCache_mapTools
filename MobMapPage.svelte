@@ -8,7 +8,7 @@ const mapPorts = retreeverMapPorts();
 import { onMount } from "svelte";
 import { dev } from "$app/environment";
 import { goto, replaceState } from "$app/navigation";
-import { MAP_CONFIG } from "$parent/siblings/getCache_OnlineMap/lib/MAP_CONFIG";
+import { persistedBasemapStyleUrl } from "./basemapPicker.svelte";
 import { initializeMap } from "$parent/siblings/getCache_OnlineMap/lib/mapInit";
 import { NiceScaleBarControl } from "$parent/siblings/getCache_OnlineMap/lib/mapScaleBar";
 import { parseMapHash } from "$parent/siblings/getCache_OnlineMap/lib/mapUtilsHash";
@@ -255,7 +255,14 @@ onMount(() => {
             initialZoom: atCam?.zoom ?? savedCam?.zoom ?? DEFAULT_ZOOM,
             hideLabels: true,
             labelWhitelist: ["road-", "settlement-"],
-            style: MAP_CONFIG.styles.defaultSat,
+            // The SAVED basemap, not the default. It used to be applied after
+            // construction, by a setStyle from the picker's sync effect, so a
+            // user who had ever chosen Streets threw away a still-loading
+            // satellite style on every boot — and the draw layers' $effect
+            // added sources into that gap ("Style is not done loading" on
+            // screen). Everyone else never swapped, which made it read as a
+            // browser difference rather than a saved preference.
+            style: persistedBasemapStyleUrl(),
             onMapCreated: (map) => {
                 // Pre-style handle for the blue dot only (see locMapInstance).
                 locMapInstance = map;

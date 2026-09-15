@@ -1,9 +1,9 @@
 // Basemap picker state machine. Extracted from MapDrawControls.svelte.
 //
 // Owns: the hosted-basemap options list, currentKey persistence (localStorage),
-// the popover open/close state, the "open from which side" geometry, the
-// initial-sync effect (apply the persisted choice on first map availability),
-// and the outside-pointerdown dismiss effect.
+// the popover open/close state, the "open from which side" geometry, and the
+// outside-pointerdown dismiss effect. The persisted choice is read at
+// CONSTRUCTION via persistedBasemapStyleUrl — never re-applied to a live map.
 //
 // Template stays in the host component — it reads basemapPicker.popoverOpen
 // etc. directly. Factory (not a singleton) so offline/preview routes each get
@@ -34,6 +34,24 @@ function loadPersistedKey(): BasemapKey {
     return "satellite";
 }
 
+/**
+ * The style the map should be BUILT with — pass to `initializeMap`'s `style`.
+ *
+ * A saved non-default basemap used to be applied after construction, by a
+ * `setStyle` from the sync effect below: the map started loading satellite,
+ * then threw it away mid-flight for streets. Every boot did a style swap, and
+ * a swap leaves a window where the style will not accept sources — which the
+ * draw layers' own $effect fell straight into, putting "Style is not done
+ * loading" on screen. Only users who had ever picked a non-default basemap saw
+ * it, which is what made it look like a browser difference.
+ */
+export function persistedBasemapStyleUrl(): string {
+    const key = loadPersistedKey();
+    return (
+        BASEMAP_OPTIONS.find((o) => o.key === key) ?? BASEMAP_OPTIONS[0]
+    ).url;
+}
+
 export interface BasemapPickerDeps {
     getMap: () => MapboxMap | null;
     getOffline: () => boolean;
@@ -56,7 +74,6 @@ export function createBasemapPicker(deps: BasemapPickerDeps): BasemapPicker {
     let popoverOpen = $state(false);
     let openSide = $state<"above" | "below">("below");
     let currentKey = $state<BasemapKey>(loadPersistedKey());
-    let _synced = false;
 
     function open() {
         if (popoverOpen) {
@@ -107,16 +124,11 @@ export function createBasemapPicker(deps: BasemapPickerDeps): BasemapPicker {
         popoverOpen = false;
     }
 
-    // Apply the persisted basemap on first map availability. Skipped on the
-    // offline route (streaming lock). Satellite is the default so only runs
-    // when a non-default choice was previously saved.
-    $effect(() => {
-        const map = deps.getMap();
-        if (!map || _synced) return;
-        _synced = true;
-        if (deps.getOffline()) return;
-        if (currentKey !== "satellite") select(currentKey);
-    });
+    // NO BOOT-TIME setStyle. The persisted choice is the map's INITIAL style
+    // (persistedBasemapStyleUrl, passed to initializeMap), so there is nothing
+    // to correct once the map exists. Re-applying it here is what crashed the
+    // page: it swapped a style that was still loading, and the draw layers
+    // added sources into that gap.
 
     // Dismiss on outside pointerdown WITHOUT swallowing the event — dragging
     // the drawer handle while the popover is open still reaches the drawer.

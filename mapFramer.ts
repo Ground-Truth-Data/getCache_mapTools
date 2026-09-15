@@ -20,7 +20,7 @@ import type { Map as MapboxMap } from "mapbox-gl";
 import type { Feature } from "geojson";
 import { toast } from "svelte-sonner";
 import { reportSyncWarning } from "$lib/mobile/utils/reportSyncError";
-import { safeFitBounds } from "$parent/siblings/getCache_OnlineMap/lib/safeMap";
+import { safeFitBounds, safeFlyTo } from "$parent/siblings/getCache_OnlineMap/lib/safeMap";
 import {
     isNullIsland,
     loadFramedMapKey,
@@ -287,7 +287,7 @@ export function createMapFramer(deps: MapFramerDeps): MapFramer {
             if (!Number.isFinite(lng) || !Number.isFinite(lat)) return false;
             if (isNullIsland(lng, lat)) return false; // never honour a (0,0) target
             const z = Number(params.get("z"));
-            map.flyTo({
+            safeFlyTo(map, {
                 center: [lng, lat],
                 zoom: Number.isFinite(z) && z > 0 ? z : 14,
                 duration: 1200,
