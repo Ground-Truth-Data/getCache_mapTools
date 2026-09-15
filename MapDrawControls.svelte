@@ -813,7 +813,17 @@ $effect(() => {
         // Same opt-out as the other two call sites on this route — see
         // mapEvents.svelte.ts. This self-heal must not be the one path that
         // quietly re-adds the unused in-progress sources.
-        setupDrawSourcesAndLayers(map, getAccentColor(), false);
+        // Seeding runs via onPainted, not after this call: on a style still
+        // loading setup defers, and a push into sources that do not exist yet
+        // would be dropped with no later tick to correct it.
+        const m = map;
+        setupDrawSourcesAndLayers(m, getAccentColor(), false, () => {
+            const seed = overlayVisibility.shapes
+                ? mapStore.features
+                : mapStore.features.filter((f) => f.geometry?.type === "Point");
+            setSource("completed-features", buildCompletedFC(seed));
+            setCentroidSources(setSource, seed);
+        });
     }
     // The "shapes" overlay toggle (Legend / Basemap popover) hides drawn lines +
     // polygons. The completed-features layers ONLY render non-Point geometry (pins
