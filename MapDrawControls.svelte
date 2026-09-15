@@ -1565,8 +1565,10 @@ $effect(() => {
        Lives here NOT in mobile.css: moving these to the global stylesheet broke
        pin sizing on native iOS (Vite/Capacitor CSS bundling order differs between
        component :global() and @import'd stylesheets). Don't move without a native build test. */
-    /* Cluster bubbles are NATIVE Mapbox layers (pinMarkers.ts, cluster:true on
-       the source) — no DOM, no CSS. Only the single-pin markers live here. */
+    /* Cluster bubbles are DOM markers like every other pin (pinMarkers.ts
+       reconcileClusters). Mapbox still decides WHICH points group; it does not
+       place the badge — that sits at the members' centroid, because a cluster's
+       own coordinate is recomputed per zoom and slides across the ground. */
     :global(.map-pin-marker) {
         display: block;
         width: 30px;
@@ -1591,6 +1593,36 @@ $effect(() => {
     }
     /* Press-feedback shrink. */
     :global(.map-pin-marker:active) { transform: scale(0.92); }
+
+    /* CLUSTER BADGE — the count centred on the teardrop's HEAD, not the middle
+       of its box: the art is 30x40 with the round head in the upper portion and
+       a tail below, so centring on the box drops the number onto the tail.
+       White on the same black halo the captions wear, so it stays legible on
+       snow and on dark canopy alike; a fill colour alone fails on one or the
+       other. */
+    :global(.map-pin-cluster) { position: relative; }
+    :global(.map-pin-cluster__art) {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        pointer-events: none;
+    }
+    :global(.map-pin-cluster__n) {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: "Baloo 2", var(--rt-font-display, sans-serif);
+        font-weight: 700;
+        font-size: 15px;
+        line-height: 1;
+        color: #fff;
+        pointer-events: none;
+        text-shadow:
+            0 0 2px #000, 0 1px 2px #000, 0 0 5px rgba(0, 0, 0, 0.92),
+            1px 0 0 rgba(0, 0, 0, 0.8), -1px 0 0 rgba(0, 0, 0, 0.8);
+    }
 
     /* EMOJI PIN — no styles needed. The plate and the glyph are baked into ONE
        image by emojiPinImage(), so an emoji pin is just an <img> like every
